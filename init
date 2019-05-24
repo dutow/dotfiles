@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -e
+
+# TODO: has UI?
+
+echo "[i] Ask for sudo password"
+sudo -v
+
+sudo apt update
+# Stuff needed for other parts
+sudo apt install -y build-essential curl git zsh python3-dev cmake
+
+# Console stuff used often by me
+sudo apt install -y mc vim tig silversearcher-ag clang clang++ tmux ssh lldb ninja-build
+# DOCKER
+# MBT
+
+# Generating a unique ssh key
+
+# Generating peer vpn keys?
+
+# UI Stuff used often by me
+sudo apt install -y rxvt-unicode i3 rofi
+# CHROME
+
+# Even more limited stuff:
+# Dropbox
+# Slack
+# Zoom
+# XChat
+
+# PowerLine setup
+git clone https://github.com/powerline/fonts.git --depth=1
+cd fonts
+./install.sh
+cd ..
+rm -rf fonts
+
+./install

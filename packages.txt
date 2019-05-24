@@ -1,0 +1,15 @@
+apt-get update
+apt-get install build-essential curl git zsh rxvt-unicode python3-dev cmake
+
+powerline: 
+
+# clone
+git clone https://github.com/powerline/fonts.git --depth=1
+# install
+cd fonts
+./install.sh
+# clean-up a bit
+cd ..
+rm -rf fonts
+
+./install

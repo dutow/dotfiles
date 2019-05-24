@@ -1,0 +1,23 @@
+- defaults:
+    link:
+      create: true
+      relink: true
+      force: true
+
+- clean: ['~']
+
+- shell:
+  - [git submodule update --init --recursive, Installing submodules]
+
+- link:
+    ~/.gitconfig: gitconfig
+    ~/.zshrc: zshrc
+    ~/.vimrc: vim/vimrc
+    ~/.vim: vim
+    ~/.Xresources: Xresources
+    ~/.mc: mc
+
+- shell:
+  - [pip3 install powerline-status]
+  - [vim +PluginInstall +qall]
+  - [cd ~/.vim/bundle/youcompleteme && python3 install.py --clang-completer --clangd-completer]
