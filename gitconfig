@@ -1,3 +1,5 @@
 [user]
 	name = Zsolt Parragi
 	email = zsolt.parragi@cancellar.hu
+[merge]
+  conflictstyle = diff3

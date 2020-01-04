@@ -16,6 +16,7 @@
     ~/.vim: vim
     ~/.Xresources: Xresources
     ~/.mc: mc
+    ~/bin/dmenu: /usr/bin/rofi
 
 - shell:
   - [pip3 install powerline-status]

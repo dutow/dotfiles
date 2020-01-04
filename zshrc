@@ -1,5 +1,7 @@
 # Based on: https://github.com/pgilad/dotfiles/blob/master/link/.zshrc
 
+[[ -e ~/.profile ]] && emulate sh -c 'source ~/.profile'
+
 export DOTFILES="$HOME/.dotfiles"
 export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
 export CACHE_DIR="$HOME/.cache"
@@ -54,3 +56,4 @@ fi
 
 zplug load
 
+autoload zmv
