@@ -21,6 +21,6 @@
     ~/bin/dmenu: /usr/bin/rofi
 
 - shell:
-  - [pip3 install powerline-status]
+  - [pip3 install --user powerline-status]
   - [vim +PluginInstall +qall]
   - [cd ~/.vim/bundle/youcompleteme && python3 install.py --clang-completer --clangd-completer]

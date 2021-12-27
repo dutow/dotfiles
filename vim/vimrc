@@ -44,6 +44,9 @@ Plugin 'majutsushi/tagbar'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'nathanaelkane/vim-indent-guides'
 
+Plugin 'wincent/command-t'
+Plugin 'moll/vim-bbye'
+
 " Plugin 'christoomey/vim-tmux-navigator'
 
 Plugin 'mileszs/ack.vim'
@@ -136,8 +139,8 @@ nnoremap <leader>gb :Git branch<Space>
 " }
 "
 " C++ {
-  autocmd FileType c ClangFormatAutoEnable
-  autocmd FileType cpp ClangFormatAutoEnable
+  autocmd FileType c,cpp,objc nnoremap <buffer><Leader>f :<C-u>ClangFormat<CR>
+  autocmd FileType c,cpp,objc vnoremap <buffer><Leader>f :ClangFormat<CR>
   set makeprg=ninja
 " }
 
@@ -145,7 +148,9 @@ nnoremap <leader>gb :Git branch<Space>
 
 " Quick save and close
 nnoremap <Leader>w :w<CR>
-nnoremap <Leader>q :q<CR>
+
+nnoremap <Leader>q :Bdelete<CR>
+nnoremap <Leader>x :bufdo :Bdelete<CR>
 
 " Using the system dashboard
 vmap <Leader>d "+d

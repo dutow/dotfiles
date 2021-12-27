@@ -3,7 +3,7 @@
 [[ -e ~/.profile ]] && emulate sh -c 'source ~/.profile'
 
 export DOTFILES="$HOME/.dotfiles"
-export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+export PATH="$HOME/bin:/usr/local/bin:/usr/local/sbin:$PATH"
 export CACHE_DIR="$HOME/.cache"
 
 [[ ! -d "$CACHE_DIR" ]] && mkdir -p "$CACHE_DIR"
@@ -48,6 +48,7 @@ SPACESHIP_TIME_SHOW=true
 SPACESHIP_DIR_TRUNC=0
 SPACESHIP_DIR_TRUNC_REPO=false
 SPACESHIP_EXIT_CODE_SHOW=true
+#SPACESHIP_CHAR_SYMBOL='>>> ' 
 zplug denysdovhan/spaceship-prompt, use:spaceship.zsh, from:github, as:theme
 
 if ! zplug check; then
@@ -57,3 +58,6 @@ fi
 zplug load
 
 autoload zmv
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/bin/vault vault
