@@ -14,8 +14,10 @@
     ~/.zshrc: zshrc
     ~/.vimrc: vim/vimrc
     ~/.vim: vim
+    ~/.config/kitty: kitty
     ~/.Xresources: Xresources
     ~/.mc: mc
+    ~/.fonts: fonts
     ~/bin/dmenu: /usr/bin/rofi
 
 - shell:
