@@ -13,8 +13,9 @@ set cursorcolumn
 syntax on
 filetype plugin on
 filetype plugin indent on
-set expandtab
 set autoindent
+set list
+set listchars=tab:»\ ,trail:•,lead:•,nbsp:•,extends:⟩,precedes:⟨
 
 set mouse=v
 set mouse=a
