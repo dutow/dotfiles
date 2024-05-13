@@ -11,17 +11,11 @@
 
 - link:
     ~/.gitconfig: gitconfig
-    ~/.zshrc: zshrc
-    ~/.vimrc: vim/vimrc
-    ~/.vim: vim
     ~/.config/kitty: kitty
     ~/.config/nvim: nvim
     ~/.Xresources: Xresources
     ~/.mc: mc
     ~/.fonts: fonts
-    ~/bin/dmenu: /usr/bin/rofi
 
 - shell:
   - [pip3 install --user powerline-status]
-  - [vim +PluginInstall +qall]
-  - [cd ~/.vim/bundle/youcompleteme && python3 install.py --clang-completer --clangd-completer]
