@@ -18,5 +18,6 @@
   - [ apt install -y kitty ]
   # AppMan for appimages
   - [ cd /tmp && wget https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL && chmod a+x ./INSTALL && ./INSTALL ]
+  - [ apt install -y jq ]
   - [ am -i nvim ]
 
