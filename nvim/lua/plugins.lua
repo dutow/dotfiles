@@ -135,6 +135,14 @@ return require('packer').startup(function(use)
     end
   }
 
+  use {
+    'hedyhli/outline.nvim',
+    config = function()
+      require('outline').setup({})
+      vim.keymap.set('n', '<Leader>o', '<Cmd>Outline<CR>')
+    end
+  }
+
   if packer_bootstrap then
     require('packer').sync()
   end
