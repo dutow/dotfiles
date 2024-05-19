@@ -47,6 +47,7 @@ return require('packer').startup(function(use)
       require('wincent.commandt').setup({
         vim.keymap.set('n', '<Leader>b', '<Plug>(CommandTBuffer)');
         vim.keymap.set('n', '<Leader>t', '<Plug>(CommandT)');
+        vim.keymap.set('n', '<Leader>r', '<Plug>(CommandTRipgrep)');
       })
     end,
   }
@@ -126,6 +127,13 @@ return require('packer').startup(function(use)
     end
   }
 
+  use {
+    'neovim/nvim-lspconfig',
+
+    config = function()
+            require('lspconfig').clangd.setup({})
+    end
+  }
 
   if packer_bootstrap then
     require('packer').sync()
