@@ -19,4 +19,4 @@
     ~/.fonts: fonts
 
 - shell:
-  - [ am -i nvim ]
+  - [ ./nviminstall.sh ]
