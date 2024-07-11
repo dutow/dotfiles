@@ -13,6 +13,7 @@
     ~/.gitconfig: gitconfig
     ~/.config/kitty: kitty
     ~/.config/nvim: nvim
+    ~/.config/fish: fish
     ~/.Xresources: Xresources
     ~/.mc: mc
     ~/.fonts: fonts
