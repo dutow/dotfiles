@@ -17,7 +17,7 @@
   - [ apt install -y mc tig ripgrep clang clangd clang-format libc++-dev libc++abi-dev tmux ssh lldb ninja-build build-essential cmake pcp pipenv meson flex bison libcurl4-openssl-dev fish libipc-run-perl pkg-config libssl-dev ]
   # UI stuff
   - [ apt install -y libwayland-cursor0 kitty libwayland-egl1-mesa mesa-utils ]
-  - [ apt install -y rvm ]
+  - [ apt install -y rvm libpq-dev ]
   # AppMan for appimages
   - [ cd /tmp && wget https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL && chmod a+x ./INSTALL && ./INSTALL ]
   - [ apt install -y jq ]
