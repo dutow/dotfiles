@@ -38,21 +38,6 @@ return require('packer').startup(function(use)
   }
 
   use {
-    'wincent/command-t',
-    run = 'cd lua/wincent/commandt/lib && make',
-    setup = function ()
-        vim.g.CommandTPreferredImplementation = 'lua'
-    end,
-    config = function()
-      require('wincent.commandt').setup({
-        vim.keymap.set('n', '<Leader>b', '<Plug>(CommandTBuffer)');
-        vim.keymap.set('n', '<Leader>t', '<Plug>(CommandT)');
-        vim.keymap.set('n', '<Leader>r', '<Plug>(CommandTRipgrep)');
-      })
-    end,
-  }
-
-  use {
     'ishan9299/nvim-solarized-lua',
     config = function()
       vim.g.solarized_italics = 1
@@ -131,7 +116,7 @@ return require('packer').startup(function(use)
     'neovim/nvim-lspconfig',
 
     config = function()
-            require('lspconfig').clangd.setup({})
+            vim.lsp.enable('clangd')
     end
   }
 
@@ -140,6 +125,20 @@ return require('packer').startup(function(use)
     config = function()
       require('outline').setup({})
       vim.keymap.set('n', '<Leader>o', '<Cmd>Outline<CR>')
+    end
+  }
+
+  use {
+    'nvim-telescope/telescope.nvim',
+    requires = { {'nvim-lua/plenary.nvim'} },
+    config = function()
+      	require('telescope').setup({})
+	local builtin = require('telescope.builtin')
+	vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
+	vim.keymap.set('n', '<leader>fr', builtin.live_grep, { desc = 'Telescope live grep' })
+	vim.keymap.set('n', '<leader>fg', builtin.git_status, { desc = 'Telescope git' })
+	vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
+	vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
     end
   }
 
