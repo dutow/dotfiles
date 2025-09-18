@@ -142,6 +142,16 @@ return require('packer').startup(function(use)
     end
   }
 
+  use {
+    'folke/trouble.nvim',
+    config = function()
+      	require('trouble').setup({})
+      vim.keymap.set('n', '<Leader>to', '<Cmd>Trouble diagnostics toggle focus=false filter.buf=0<CR>')
+      vim.keymap.set('n', '<Leader>ts', '<Cmd>Trouble symbols toggle focus=false<CR>')
+      vim.keymap.set('n', '<Leader>tl', '<Cmd>Trouble lsp toggle focus=false<CR>')
+    end
+  }
+
   if packer_bootstrap then
     require('packer').sync()
   end
