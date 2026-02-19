@@ -153,6 +153,11 @@ return require('packer').startup(function(use)
     end
   }
 
+  use {
+    'slim-template/vim-slim',
+    ft = { 'slim' }
+  }
+
   if packer_bootstrap then
     require('packer').sync()
   end
