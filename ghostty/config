@@ -1,3 +1,4 @@
 theme = Solarized Dark
 font-family = Fira Code Nerd Font
 font-size = 18
+keybind = shift+enter=text:\x1b\r

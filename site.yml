@@ -34,6 +34,9 @@
       tags: python-dev
       when: "'python-dev' in dotfiles_sets"
 
+    - role: ai-tools
+      tags: ai-tools
+      when: "dotfiles_env in ['desktop', 'wsl']"
     - role: desktop
       tags: desktop
       when: "dotfiles_env in ['desktop', 'wsl']"
