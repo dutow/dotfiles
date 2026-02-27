@@ -6,3 +6,4 @@ dotfiles_sets:
   - ruby-dev
   - node-dev
   - python-dev
+  - ai-tools

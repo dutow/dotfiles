@@ -1,0 +1,50 @@
+version: "3"
+
+vars:
+  DISTRO: '{{.DISTRO | default "tumbleweed"}}'
+  SETS: '{{.SETS | default "cpp-dev,ruby-dev,node-dev,python-dev,ai-tools"}}'
+  TAG: '{{.TAG | default .DISTRO}}'
+  CONTEXT: '{{.CONTEXT | default "default"}}'
+  MOUNT: "{{.MOUNT}}"
+
+tasks:
+  container:build:
+    desc: Build a container image
+    cmds:
+      - ./container.sh build --distro {{.DISTRO}} --sets {{.SETS}} --tag {{.TAG}}
+        {{if .RUNTIME}}--runtime {{.RUNTIME}}{{end}}
+    vars:
+      RUNTIME: "{{.RUNTIME}}"
+
+  container:build:all:
+    desc: Build container images for all supported distros
+    cmds:
+      - for:
+          - ubuntu-24.04
+          - ubuntu-22.04
+          - tumbleweed
+          - oracle-9
+          - oracle-8
+        cmd: ./container.sh build --distro {{.ITEM}}
+
+  container:run:
+    desc: Run a container from a built image
+    interactive: true
+    cmds:
+      - ./container.sh run --tag {{.TAG}} --context {{.CONTEXT}}
+        {{if .MOUNT}}--mount {{.MOUNT}}{{end}}
+        {{if .SHELL}}--shell {{.SHELL}}{{end}}
+        {{if .RUNTIME}}--runtime {{.RUNTIME}}{{end}}
+    vars:
+      SHELL: "{{.SHELL}}"
+      RUNTIME: "{{.RUNTIME}}"
+
+  container:list:
+    desc: List dotfiles container images
+    cmds:
+      - ./container.sh list
+
+  container:clean:
+    desc: Remove all dotfiles container images
+    cmds:
+      - ./container.sh clean

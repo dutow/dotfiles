@@ -63,6 +63,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `ruby-dev`   | ruby, rvm (Ubuntu), postgresql dev headers               |
 | `node-dev`   | nodejs, npm                                              |
 | `python-dev` | python3-dev, pip, pipenv                                 |
+| `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
 
 ## Ansible roles
 
@@ -75,12 +76,12 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `shell`         | shell          | —                                | zsh + starship prompt                             |
 | `neovim`        | neovim         | —                                | Neovim (unstable PPA on Ubuntu)                   |
 | `git-tools`     | git-tools      | —                                | git, tig, delta                                   |
-| `console-tools` | console-tools  | —                                | mc, ripgrep, fd, tmux, glances                    |
+| `console-tools` | console-tools  | —                                | mc, ripgrep, fd, tmux, glances, go-task            |
 | `cpp-dev`       | cpp-dev        | `'cpp-dev' in dotfiles_sets`     | C/C++ toolchain                                   |
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby development                                  |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js development                               |
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python development                                |
-| `ai-tools`      | ai-tools       | env is `desktop` or `wsl`        | AI development tools                               |
+| `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |
@@ -133,6 +134,47 @@ The `links` role runs Dotbot with two config files:
 - **Hyprland** — shared base config + per-host overrides, greetd with gtkgreet (launched via Hyprland compositor)
 - **Midnight Commander** — Solarized theme
 - **Fonts** — Fira Code Nerd Font (multiple weights)
+
+## Container images
+
+The `container.sh` script builds container images provisioned with dotfiles — useful for AI agent environments or reproducible dev setups. It supports podman (preferred) and docker.
+
+### Supported distros
+
+`ubuntu-24.04` (default), `ubuntu-22.04`, `tumbleweed`, `oracle-9`, `oracle-8`
+
+### Usage
+
+```bash
+# Build with defaults (ubuntu-24.04, all sets)
+./container.sh build
+
+# Build a specific distro with specific sets
+./container.sh build --distro tumbleweed --sets cpp-dev,ai-tools
+
+# Run (ephemeral container with zsh)
+./container.sh run --mount /path/to/project
+
+# Run with a named AI config context (persistent OAuth sessions)
+./container.sh run --context my-project --mount /home/user/work:/work
+
+# List / clean images
+./container.sh list
+./container.sh clean
+```
+
+AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context gets its own subdirectory with separate `claude/` and `codex/` dirs mounted into the container.
+
+A `Taskfile.yml` is also provided for [go-task](https://taskfile.dev/) users:
+
+```bash
+task container:build                                       # default distro, all sets
+task container:build DISTRO=tumbleweed SETS=cpp-dev,ai-tools
+task container:build:all                                   # build all distros
+task container:run MOUNT=/path/to/project CONTEXT=my-proj
+task container:list
+task container:clean
+```
 
 ## Git submodules
 

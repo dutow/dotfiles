@@ -6,6 +6,7 @@ cd "${BASEDIR}"
 
 EXTRA_VARS=()
 ANSIBLE_ARGS=()
+CONTAINER_MODE=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
             JSON_SETS="[${JSON_SETS%,}]"
             EXTRA_VARS+=("dotfiles_sets=${JSON_SETS}")
             shift 2
+            ;;
+        --container)
+            CONTAINER_MODE=true
+            shift
             ;;
         --tags)
             ANSIBLE_ARGS+=("--tags" "$2")
@@ -71,7 +76,9 @@ install_ansible() {
 
 install_ansible
 
-git submodule update --init --recursive
+if [ "$CONTAINER_MODE" = false ]; then
+    git submodule update --init --recursive
+fi
 
 # Target the current hostname if it has a host_vars file, otherwise fall back to localhost
 HOSTNAME=$(hostname -s)
@@ -81,7 +88,7 @@ else
     ANSIBLE_ARGS+=("--limit" "localhost")
 fi
 
-if [ "$(id -u)" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ] && [ "$CONTAINER_MODE" = false ]; then
     ANSIBLE_ARGS+=("--ask-become-pass")
 fi
 

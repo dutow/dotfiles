@@ -4,6 +4,7 @@ path=(~/.local/bin ~/.npm-global/bin $path)
 
 # Environment
 export EDITOR=nvim
+export DOTFILES_AICONT_DIR="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
 
 # History
 HISTFILE=~/.zsh_history

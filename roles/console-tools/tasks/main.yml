@@ -7,3 +7,14 @@
     name: "{{ console_tools_packages }}"
     state: present
   become: true
+
+- name: Check if task (go-task) is installed
+  ansible.builtin.command: which task
+  register: task_check
+  changed_when: false
+  failed_when: false
+
+- name: Install go-task
+  ansible.builtin.shell: >
+    sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+  when: task_check.rc != 0

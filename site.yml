@@ -36,7 +36,7 @@
 
     - role: ai-tools
       tags: ai-tools
-      when: "dotfiles_env in ['desktop', 'wsl']"
+      when: "'ai-tools' in dotfiles_sets"
     - role: desktop
       tags: desktop
       when: "dotfiles_env in ['desktop', 'wsl']"
