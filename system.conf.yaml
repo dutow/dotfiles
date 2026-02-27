@@ -8,18 +8,18 @@
 
 - shell:
   - [ apt-add-repository -y ppa:rael-gc/rvm ]
+  - [ apt-add-repository -y ppa:neovim-ppa/unstable ]
   - [ apt update ]
   - [ apt upgrade -y ]
   - [ apt dist-upgrade -y ]
   # Depdendencies
-- [ apt install -y curl git python3-dev python3-pip fish wget libfuse2 nodejs npm ]
+  - [ apt install -y curl git python3-dev python3-pip fish wget nodejs npm ]
   # Console tools
   - [ apt install -y mc tig ripgrep clang clangd clang-format libc++-dev libc++abi-dev tmux ssh lldb ninja-build build-essential cmake pcp pipenv meson flex bison libcurl4-openssl-dev fish libipc-run-perl pkg-config libssl-dev fd-find glances ]
   # UI stuff
   - [ apt install -y libwayland-cursor0 kitty libwayland-egl1-mesa mesa-utils ]
   - [ apt install -y rvm libpq-dev ]
-  # AppMan for appimages
-  - [ cd /tmp && wget https://raw.githubusercontent.com/ivan-hc/AM/main/INSTALL && chmod a+x ./INSTALL && ./INSTALL ]
+  - [ apt install -y neovim ]
   - [ apt install -y jq ]
   - [ curl -sS https://starship.rs/install.sh | sh -s -- -y ]
   - [ usermod -a -G rvm dutow ]

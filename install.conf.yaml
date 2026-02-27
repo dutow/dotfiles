@@ -17,6 +17,3 @@
     ~/.Xresources: Xresources
     ~/.mc: mc
     ~/.fonts: fonts
-
-- shell:
-  - [ ./nviminstall.sh ]
