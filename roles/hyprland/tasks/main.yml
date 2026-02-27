@@ -1,0 +1,9 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Hyprland and supporting packages
+  ansible.builtin.package:
+    name: "{{ hyprland_packages }}"
+    state: present
+  become: true

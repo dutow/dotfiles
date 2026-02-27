@@ -1,0 +1,62 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install git tools
+  ansible.builtin.package:
+    name: "{{ git_tools_packages }}"
+    state: present
+  become: true
+
+- name: Check if delta is installed
+  ansible.builtin.command: which delta
+  register: delta_check
+  changed_when: false
+  failed_when: false
+
+- name: Install delta from GitHub release (if not packaged)
+  when:
+    - delta_check.rc != 0
+    - dotfiles_distro in ['ubuntu', 'oracle']
+  block:
+    - name: Get latest delta release URL
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/dandavison/delta/releases/latest
+        return_content: true
+      register: delta_release
+
+    - name: Download delta .deb (Ubuntu)
+      ansible.builtin.get_url:
+        url: "{{ delta_release.json.assets | selectattr('name', 'match', 'git-delta_.*_amd64.deb') | map(attribute='browser_download_url') | first }}"
+        dest: /tmp/git-delta.deb
+        mode: '0644'
+      when: dotfiles_distro == 'ubuntu'
+
+    - name: Install delta .deb (Ubuntu)
+      ansible.builtin.apt:
+        deb: /tmp/git-delta.deb
+      become: true
+      when: dotfiles_distro == 'ubuntu'
+
+    - name: Download delta tarball (Oracle)
+      ansible.builtin.get_url:
+        url: "{{ delta_release.json.assets | selectattr('name', 'match', 'delta-.*-x86_64-unknown-linux-gnu\\.tar\\.gz') | map(attribute='browser_download_url') | first }}"
+        dest: /tmp/git-delta.tar.gz
+        mode: '0644'
+      when: dotfiles_distro == 'oracle'
+
+    - name: Extract delta binary (Oracle)
+      ansible.builtin.unarchive:
+        src: /tmp/git-delta.tar.gz
+        dest: /tmp
+        remote_src: true
+      when: dotfiles_distro == 'oracle'
+
+    - name: Install delta binary (Oracle)
+      ansible.builtin.copy:
+        src: "/tmp/delta-{{ delta_release.json.tag_name }}-x86_64-unknown-linux-gnu/delta"
+        dest: /usr/local/bin/delta
+        mode: '0755'
+        remote_src: true
+      become: true
+      when: dotfiles_distro == 'oracle'

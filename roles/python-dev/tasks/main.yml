@@ -1,0 +1,9 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Python development packages
+  ansible.builtin.package:
+    name: "{{ python_dev_packages }}"
+    state: present
+  become: true

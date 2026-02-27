@@ -1,0 +1,4 @@
+---
+- name: Ensure WSL interop is configured
+  ansible.builtin.debug:
+    msg: "WSL environment detected - applying WSL-specific configuration"

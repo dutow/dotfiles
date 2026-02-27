@@ -1,0 +1,5 @@
+---
+git_tools_packages:
+  - git
+  - tig
+  - git-delta

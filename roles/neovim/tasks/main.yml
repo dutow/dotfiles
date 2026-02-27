@@ -1,0 +1,16 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Add neovim PPA (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: ppa:neovim-ppa/unstable
+    state: present
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Install neovim
+  ansible.builtin.package:
+    name: "{{ neovim_packages }}"
+    state: present
+  become: true

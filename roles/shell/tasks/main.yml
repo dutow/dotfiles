@@ -1,0 +1,20 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install zsh
+  ansible.builtin.package:
+    name: "{{ shell_packages }}"
+    state: present
+  become: true
+
+- name: Check if starship is installed
+  ansible.builtin.command: which starship
+  register: starship_check
+  changed_when: false
+  failed_when: false
+
+- name: Install starship
+  ansible.builtin.shell: curl -sS https://starship.rs/install.sh | sh -s -- -y
+  when: starship_check.rc != 0
+  become: true

@@ -1,0 +1,51 @@
+---
+- name: Map distribution to distro key
+  ansible.builtin.set_fact:
+    dotfiles_distro: "{{ distro_key_map[ansible_distribution] | default('unknown') }}"
+
+- name: Fail if unsupported distribution
+  ansible.builtin.fail:
+    msg: "Unsupported distribution: {{ ansible_distribution }}. Supported: {{ distro_key_map.keys() | list }}"
+  when: dotfiles_distro == 'unknown'
+
+- name: Check for WSL
+  ansible.builtin.set_fact:
+    is_wsl: "{{ (lookup('file', '/proc/version', errors='ignore') | default('')) is search('microsoft', ignorecase=True) }}"
+
+- name: Set dotfiles_env from WSL detection (if not already set)
+  ansible.builtin.set_fact:
+    dotfiles_env: wsl
+  when:
+    - dotfiles_env is not defined
+    - is_wsl | bool
+
+- name: Default dotfiles_env to console (if still not set)
+  ansible.builtin.set_fact:
+    dotfiles_env: console
+  when: dotfiles_env is not defined
+
+- name: Set default dotfiles_sets for desktop/wsl (all sets)
+  ansible.builtin.set_fact:
+    dotfiles_sets:
+      - cpp-dev
+      - ruby-dev
+      - node-dev
+      - python-dev
+  when:
+    - dotfiles_sets is not defined
+    - dotfiles_env in ['desktop', 'wsl']
+
+- name: Set default dotfiles_sets for console (empty)
+  ansible.builtin.set_fact:
+    dotfiles_sets: []
+  when:
+    - dotfiles_sets is not defined
+    - dotfiles_env == 'console'
+
+- name: Print detected configuration
+  ansible.builtin.debug:
+    msg:
+      - "Distribution: {{ ansible_distribution }} -> {{ dotfiles_distro }}"
+      - "Environment:  {{ dotfiles_env }}"
+      - "WSL:          {{ is_wsl }}"
+      - "Sets:         {{ dotfiles_sets }}"

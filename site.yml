@@ -1,0 +1,49 @@
+---
+- name: Configure workstation
+  hosts: all
+  gather_facts: true
+
+  pre_tasks:
+    - name: Detect environment
+      ansible.builtin.include_role:
+        name: detect
+      tags: always
+
+  roles:
+    - role: base
+      tags: base
+    - role: shell
+      tags: shell
+    - role: neovim
+      tags: neovim
+    - role: git-tools
+      tags: git-tools
+    - role: console-tools
+      tags: console-tools
+
+    - role: cpp-dev
+      tags: cpp-dev
+      when: "'cpp-dev' in dotfiles_sets"
+    - role: ruby-dev
+      tags: ruby-dev
+      when: "'ruby-dev' in dotfiles_sets"
+    - role: node-dev
+      tags: node-dev
+      when: "'node-dev' in dotfiles_sets"
+    - role: python-dev
+      tags: python-dev
+      when: "'python-dev' in dotfiles_sets"
+
+    - role: desktop
+      tags: desktop
+      when: "dotfiles_env in ['desktop', 'wsl']"
+    - role: hyprland
+      tags: hyprland
+      when: "dotfiles_env == 'desktop'"
+    - role: wsl
+      tags: wsl
+      when: "dotfiles_env == 'wsl'"
+
+    # Symlinks (always last)
+    - role: links
+      tags: links

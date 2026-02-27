@@ -1,0 +1,7 @@
+---
+dotfiles_env: desktop
+dotfiles_sets:
+  - cpp-dev
+  - ruby-dev
+  - node-dev
+  - python-dev

@@ -1,0 +1,4 @@
+---
+git_tools_packages:
+  - git
+  - tig

@@ -1,0 +1,9 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install desktop packages
+  ansible.builtin.package:
+    name: "{{ desktop_packages }}"
+    state: present
+  become: true

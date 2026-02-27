@@ -1,0 +1,14 @@
+---
+hyprland_packages:
+  - hyprland
+  - xdg-desktop-portal-hyprland
+  - waybar
+  - wofi
+  - swaybg
+  - swaylock
+  - swayidle
+  - mako
+  - grim
+  - slurp
+  - wl-clipboard
+  - polkit-gnome

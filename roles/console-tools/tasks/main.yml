@@ -1,0 +1,9 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install console tools
+  ansible.builtin.package:
+    name: "{{ console_tools_packages }}"
+    state: present
+  become: true

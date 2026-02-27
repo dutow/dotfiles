@@ -1,0 +1,4 @@
+---
+ruby_dev_packages:
+  - rvm
+  - libpq-dev

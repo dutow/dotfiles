@@ -1,0 +1,7 @@
+---
+console_tools_packages:
+  - mc
+  - ripgrep
+  - fd-find
+  - tmux
+  - glances

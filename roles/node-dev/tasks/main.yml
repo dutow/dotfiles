@@ -1,0 +1,9 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Node.js packages
+  ansible.builtin.package:
+    name: "{{ node_dev_packages }}"
+    state: present
+  become: true

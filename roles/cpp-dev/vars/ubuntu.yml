@@ -1,0 +1,18 @@
+---
+cpp_dev_packages:
+  - build-essential
+  - clang
+  - clangd
+  - clang-format
+  - libc++-dev
+  - libc++abi-dev
+  - lldb
+  - cmake
+  - ninja-build
+  - meson
+  - flex
+  - bison
+  - pkg-config
+  - libcurl4-openssl-dev
+  - libipc-run-perl
+  - libssl-dev

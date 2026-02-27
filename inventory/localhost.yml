@@ -1,0 +1,8 @@
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+    ddesk:
+      ansible_connection: local
+    dwork:
+      ansible_connection: local

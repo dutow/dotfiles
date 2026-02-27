@@ -1,0 +1,11 @@
+---
+- name: Run dotbot with base config
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_dir }}/dotbot/bin/dotbot -d {{ dotfiles_dir }} -c {{ dotfiles_dir }}/links/base.conf.yaml"
+  changed_when: true
+
+- name: Run dotbot with desktop config
+  ansible.builtin.command:
+    cmd: "{{ dotfiles_dir }}/dotbot/bin/dotbot -d {{ dotfiles_dir }} -c {{ dotfiles_dir }}/links/desktop.conf.yaml"
+  when: dotfiles_env in ['desktop', 'wsl']
+  changed_when: true

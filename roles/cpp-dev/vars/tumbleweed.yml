@@ -1,0 +1,15 @@
+---
+cpp_dev_packages:
+  - gcc
+  - gcc-c++
+  - clang
+  - lldb
+  - cmake
+  - ninja
+  - meson
+  - flex
+  - bison
+  - pkg-config
+  - libcurl-devel
+  - libopenssl-devel
+  - patterns-devel-base-devel_basis

@@ -11,10 +11,7 @@
 
 - link:
     ~/.gitconfig: gitconfig
-    ~/.config/kitty: kitty
     ~/.config/nvim: nvim
     ~/.zshrc: zsh/.zshrc
     ~/.zsh_plugins.txt: zsh/.zsh_plugins.txt
-    ~/.Xresources: Xresources
     ~/.mc: mc
-    ~/.fonts: fonts
