@@ -1,6 +1,5 @@
 ---
 desktop_packages:
-  - kitty
   - libwayland-cursor0
   - libwayland-egl1-mesa
   - mesa-utils

@@ -1,5 +1,5 @@
 ---
 desktop_packages:
-  - kitty
+  - ghostty
   - libwayland-cursor0
   - Mesa-libEGL1

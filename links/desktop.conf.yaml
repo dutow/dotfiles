@@ -5,6 +5,6 @@
       force: true
 
 - link:
-    ~/.config/kitty: kitty
+    ~/.config/ghostty: ghostty
     ~/.Xresources: Xresources
     ~/.fonts: fonts

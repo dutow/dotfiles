@@ -7,3 +7,31 @@
     name: "{{ desktop_packages }}"
     state: present
   become: true
+
+- name: Check if ghostty is installed
+  ansible.builtin.command: which ghostty
+  register: ghostty_check
+  changed_when: false
+  failed_when: false
+
+- name: Install ghostty from GitHub release (Ubuntu)
+  when:
+    - ghostty_check.rc != 0
+    - dotfiles_distro == 'ubuntu'
+  block:
+    - name: Get latest ghostty-ubuntu release
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest
+        return_content: true
+      register: ghostty_release
+
+    - name: Download ghostty .deb
+      ansible.builtin.get_url:
+        url: "{{ ghostty_release.json.assets | selectattr('name', 'match', 'ghostty_.*_amd64_' ~ ansible_distribution_version ~ '\\.deb') | map(attribute='browser_download_url') | first }}"
+        dest: /tmp/ghostty.deb
+        mode: '0644'
+
+    - name: Install ghostty .deb
+      ansible.builtin.apt:
+        deb: /tmp/ghostty.deb
+      become: true

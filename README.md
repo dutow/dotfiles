@@ -80,7 +80,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby development                                  |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js development                               |
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python development                                |
-| `desktop`       | desktop        | env is `desktop` or `wsl`        | Kitty, Mesa, Wayland libs                         |
+| `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs                       |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + waybar, wofi, swaybg, etc.          |
 | `wsl`           | wsl            | env is `wsl`                     | WSL-specific config (placeholder)                 |
 | `links`         | links          | —                                | Dotbot symlinks (always last)                     |
@@ -103,7 +103,7 @@ The `links` role runs Dotbot with two config files:
 
 | Link                | Target             |
 |---------------------|--------------------|
-| `~/.config/kitty`   | `kitty/`           |
+| `~/.config/ghostty` | `ghostty/`         |
 | `~/.Xresources`     | `Xresources`       |
 | `~/.fonts`          | `fonts/`           |
 
@@ -112,7 +112,7 @@ The `links` role runs Dotbot with two config files:
 - **zsh** — antidote plugin manager, zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions, starship prompt
 - **Neovim** — Packer plugins, Treesitter, LSP (clangd), Telescope, nvim-tree, gitsigns, Solarized theme
 - **Git** — delta pager, zdiff3 merge style
-- **Kitty** — Fira Code Nerd Font, Solarized Dark theme
+- **Ghostty** — Fira Code Nerd Font, Solarized Dark theme
 - **Midnight Commander** — Solarized theme
 - **Fonts** — Fira Code Nerd Font (multiple weights)
 
