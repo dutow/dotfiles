@@ -80,10 +80,27 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby development                                  |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js development                               |
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python development                                |
-| `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs                       |
-| `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + waybar, wofi, swaybg, etc.          |
-| `wsl`           | wsl            | env is `wsl`                     | WSL-specific config (placeholder)                 |
-| `links`         | links          | —                                | Dotbot symlinks (always last)                     |
+| `ai-tools`      | ai-tools       | env is `desktop` or `wsl`        | AI development tools                               |
+| `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
+| `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
+| `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |
+| `wsl`           | wsl            | env is `wsl`                     | WSL-specific config (placeholder)                  |
+| `links`         | links          | —                                | Dotbot symlinks (always last)                      |
+
+### Desktop apps (Tumbleweed)
+
+Native packages (zypper): Firefox, Thunderbird, KeePassXC, VS Code, podman
+
+Flatpak (via Flathub): Slack, Steam, Discord, Dropbox
+
+### NVIDIA drivers
+
+NVIDIA GPU support is opt-in per host via the `desktop_nvidia_gpu` variable in `inventory/host_vars/`. When enabled, the NVIDIA repository is added and G06 driver packages are installed. Defaults to `false`.
+
+```yaml
+# inventory/host_vars/<hostname>.yml
+desktop_nvidia_gpu: true
+```
 
 ## Dotbot symlinks
 
@@ -113,6 +130,7 @@ The `links` role runs Dotbot with two config files:
 - **Neovim** — Packer plugins, Treesitter, LSP (clangd), Telescope, nvim-tree, gitsigns, Solarized theme
 - **Git** — delta pager, zdiff3 merge style
 - **Ghostty** — Fira Code Nerd Font, Solarized Dark theme
+- **Hyprland** — shared base config + per-host overrides, greetd with gtkgreet (launched via Hyprland compositor)
 - **Midnight Commander** — Solarized theme
 - **Fonts** — Fira Code Nerd Font (multiple weights)
 

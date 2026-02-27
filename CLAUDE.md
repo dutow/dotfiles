@@ -15,3 +15,5 @@ And it has 3 different target environments:
 For real computer installations, the matrix doesn't have to be full, for now we only support Tumbleweed.
 
 We also want some "sets" that are not part of the basic console setup, but are selectable separately - for example not all console setups need all C/C++ development tools. WSL/Desktop setups should be "all inclusive", and contain all specific sets.
+
+Always keep the README up to date, but do not bloat it with unecessary information.
