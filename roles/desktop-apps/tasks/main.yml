@@ -1,0 +1,13 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Include tumbleweed-specific tasks
+  ansible.builtin.include_tasks: tumbleweed.yml
+  when: dotfiles_distro == 'tumbleweed'
+
+- name: Install desktop application packages
+  ansible.builtin.package:
+    name: "{{ desktop_apps_packages }}"
+    state: present
+  become: true

@@ -43,6 +43,9 @@
     - role: hyprland
       tags: hyprland
       when: "dotfiles_env == 'desktop'"
+    - role: desktop-apps
+      tags: desktop-apps
+      when: "dotfiles_env == 'desktop'"
     - role: wsl
       tags: wsl
       when: "dotfiles_env == 'wsl'"

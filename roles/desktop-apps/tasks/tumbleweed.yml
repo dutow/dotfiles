@@ -1,0 +1,23 @@
+---
+- name: Add Microsoft VS Code repository
+  community.general.zypper_repository:
+    name: vscode
+    repo: "{{ desktop_apps_vscode_repo_url }}"
+    auto_import_keys: true
+    autorefresh: true
+    enabled: true
+  become: true
+
+- name: Check if Slack is installed
+  ansible.builtin.command: which slack
+  register: slack_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Slack from RPM
+  community.general.zypper:
+    name: "{{ desktop_apps_slack_rpm_url }}"
+    state: present
+    disable_gpg_check: true
+  become: true
+  when: slack_check.rc != 0
