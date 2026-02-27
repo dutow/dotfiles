@@ -12,3 +12,6 @@ hyprland_packages:
   - slurp
   - wl-clipboard
   - polkit-gnome
+  - greetd
+  - gtkgreet
+  - cage

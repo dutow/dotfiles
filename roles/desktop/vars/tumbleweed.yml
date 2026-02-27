@@ -3,3 +3,5 @@ desktop_packages:
   - ghostty
   - libwayland-cursor0
   - Mesa-libEGL1
+  - xwayland
+  - Mesa-dri

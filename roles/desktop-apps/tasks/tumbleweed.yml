@@ -8,16 +8,21 @@
     enabled: true
   become: true
 
-- name: Check if Slack is installed
-  ansible.builtin.command: which slack
-  register: slack_check
-  changed_when: false
-  failed_when: false
-
-- name: Install Slack from RPM
-  community.general.zypper:
-    name: "{{ desktop_apps_slack_rpm_url }}"
+- name: Install Flatpak
+  ansible.builtin.package:
+    name: flatpak
     state: present
-    disable_gpg_check: true
   become: true
-  when: slack_check.rc != 0
+
+- name: Add Flathub repository
+  community.general.flatpak_remote:
+    name: flathub
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+    state: present
+  become: true
+
+- name: Install Flatpak packages
+  community.general.flatpak:
+    name: "{{ desktop_apps_flatpaks }}"
+    state: present
+  become: true

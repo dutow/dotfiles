@@ -54,13 +54,13 @@ install_ansible() {
     case "$ID" in
         ubuntu|debian)
             sudo apt-get update
-            sudo apt-get install -y python3 python3-pip ansible
+            sudo apt-get install -y python3 python3-pip ansible git
             ;;
         opensuse-tumbleweed|opensuse*)
-            sudo zypper install -y python3 ansible
+            sudo zypper install -y python3 ansible git-core
             ;;
         ol|oracle*)
-            sudo dnf install -y python3 python3-pip ansible-core
+            sudo dnf install -y python3 python3-pip ansible-core git
             ;;
         *)
             echo "ERROR: Unsupported OS: $ID"

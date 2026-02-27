@@ -7,3 +7,63 @@
     name: "{{ hyprland_packages }}"
     state: present
   become: true
+
+- name: Create greetd config directory
+  ansible.builtin.file:
+    path: /etc/greetd
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Deploy greetd config
+  ansible.builtin.copy:
+    dest: /etc/greetd/config.toml
+    mode: '0644'
+    content: |
+      [terminal]
+      vt = 1
+
+      [default_session]
+      command = "cage -s -- gtkgreet"
+      user = "greeter"
+  become: true
+
+- name: Deploy greetd environments
+  ansible.builtin.copy:
+    dest: /etc/greetd/environments
+    mode: '0644'
+    content: |
+      Hyprland
+  become: true
+
+- name: Enable greetd service
+  ansible.builtin.systemd:
+    name: greetd
+    enabled: true
+  become: true
+
+- name: Create hypr config directory
+  ansible.builtin.file:
+    path: "{{ dotfiles_home }}/.config/hypr"
+    state: directory
+    mode: '0755'
+
+- name: Symlink Hyprland base config
+  ansible.builtin.file:
+    src: "{{ dotfiles_dir }}/hypr/hyprland.conf"
+    dest: "{{ dotfiles_home }}/.config/hypr/hyprland.conf"
+    state: link
+    force: true
+
+- name: Check if host-specific Hyprland config exists
+  ansible.builtin.stat:
+    path: "{{ dotfiles_dir }}/hypr/hosts/{{ inventory_hostname }}.conf"
+  register: hypr_host_config
+
+- name: Symlink host-specific Hyprland config
+  ansible.builtin.file:
+    src: "{{ dotfiles_dir }}/hypr/hosts/{{ inventory_hostname }}.conf"
+    dest: "{{ dotfiles_home }}/.config/hypr/host.conf"
+    state: link
+    force: true
+  when: hypr_host_config.stat.exists
