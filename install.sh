@@ -81,4 +81,8 @@ else
     ANSIBLE_ARGS+=("--limit" "localhost")
 fi
 
+if [ "$(id -u)" -ne 0 ]; then
+    ANSIBLE_ARGS+=("--ask-become-pass")
+fi
+
 ansible-playbook "${BASEDIR}/site.yml" "${ANSIBLE_ARGS[@]}"
