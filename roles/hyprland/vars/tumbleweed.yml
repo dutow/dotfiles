@@ -1,6 +1,7 @@
 ---
 hyprland_packages:
   - hyprland
+  - uwsm
   - xdg-desktop-portal-hyprland
   - waybar
   - wofi
@@ -14,4 +15,3 @@ hyprland_packages:
   - polkit-gnome
   - greetd
   - gtkgreet
-  - cage
