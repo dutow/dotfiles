@@ -20,7 +20,7 @@ jobs:
             install_cmd: ./install.sh --env wsl
           - name: tumbleweed
             image: opensuse/tumbleweed
-            install_prereqs: zypper install -y git sudo hostname
+            install_prereqs: zypper --non-interactive dup && zypper install -y git sudo hostname
             install_cmd: ./install.sh --env desktop
           - name: oracle-9
             image: oraclelinux:9
