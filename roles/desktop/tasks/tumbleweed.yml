@@ -1,0 +1,19 @@
+---
+- name: Add NVIDIA repository
+  community.general.zypper_repository:
+    name: NVIDIA
+    repo: https://download.nvidia.com/opensuse/tumbleweed
+    auto_import_keys: true
+    autorefresh: true
+    enabled: true
+    overwrite_multiple: true
+  become: true
+  when: desktop_nvidia_gpu
+
+- name: Install NVIDIA driver packages
+  ansible.builtin.command:
+    cmd: zypper --non-interactive --gpg-auto-import-keys install --auto-agree-with-licenses nvidia-video-G06 nvidia-driver-G06-kmp-default nvidia-gl-G06
+  become: true
+  when: desktop_nvidia_gpu
+  register: nvidia_install
+  changed_when: "'Nothing to do' not in nvidia_install.stdout"

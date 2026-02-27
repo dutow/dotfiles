@@ -1,5 +1,6 @@
 ---
 dotfiles_env: desktop
+desktop_nvidia_gpu: true
 dotfiles_sets:
   - cpp-dev
   - ruby-dev

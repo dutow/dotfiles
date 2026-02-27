@@ -3,6 +3,8 @@ dotfiles_dir: "{{ lookup('env', 'HOME') }}/.dotfiles"
 dotfiles_user: "{{ lookup('env', 'USER') }}"
 dotfiles_home: "{{ lookup('env', 'HOME') }}"
 
+desktop_nvidia_gpu: false
+
 distro_key_map:
   Ubuntu: ubuntu
   openSUSE Tumbleweed: tumbleweed
