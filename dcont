@@ -75,10 +75,7 @@ cmd_build() {
     local host_gid
     host_gid=$(id -g)
 
-    cleanup() {
-        "$rt" rm -f "$build_container" &>/dev/null || true
-    }
-    trap cleanup EXIT
+    trap "$rt rm -f $build_container &>/dev/null || true" EXIT
 
     echo "Building image: $image_name"
     echo "  Distro:  $distro ($base_image)"
