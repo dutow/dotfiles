@@ -16,3 +16,4 @@
     ~/.zsh_plugins.txt: zsh/.zsh_plugins.txt
     ~/.mc: mc
     ~/.local/bin/dcont: dcont
+    ~/.claude/CLAUDE.md: claude/CLAUDE.md

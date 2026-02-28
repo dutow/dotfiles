@@ -154,6 +154,15 @@ cmd_run() {
     local ctx_dir="$aicont_dir/$context"
     mkdir -p "$ctx_dir/claude" "$ctx_dir/codex"
 
+    # Sync system-level CLAUDE.md into the context's claude dir
+    local src_claude_md="$HOME/.claude/CLAUDE.md"
+    local dst_claude_md="$ctx_dir/claude/CLAUDE.md"
+    if [ -f "$src_claude_md" ]; then
+        if [ ! -f "$dst_claude_md" ] || ! cmp -s "$src_claude_md" "$dst_claude_md"; then
+            cp "$src_claude_md" "$dst_claude_md"
+        fi
+    fi
+
     local host_user
     host_user=$(id -un)
 
