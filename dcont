@@ -128,6 +128,7 @@ cmd_build() {
 cmd_run() {
     local tag="$DEFAULT_DISTRO"
     local mounts=()
+    local networks=()
     local context="default"
     local shell="/bin/zsh"
     local runtime=""
@@ -136,6 +137,7 @@ cmd_run() {
         case "$1" in
             --tag)     tag="$2"; shift 2 ;;
             --mount)   mounts+=("$2"); shift 2 ;;
+            --network) networks+=("$2"); shift 2 ;;
             --context) context="$2"; shift 2 ;;
             --shell)   shell="$2"; shift 2 ;;
             --runtime) runtime="$2"; shift 2 ;;
@@ -165,6 +167,10 @@ cmd_run() {
 
     run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude")
     run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex")
+
+    for network in "${networks[@]}"; do
+        run_args+=(--network "$network")
+    done
 
     for mount in "${mounts[@]}"; do
         if [[ "$mount" == *:* ]]; then
@@ -253,6 +259,8 @@ Build options:
 Run options:
   --tag <tag>              Image tag to run (default: $DEFAULT_DISTRO)
   --mount <path>           Volume mount (repeatable). host:container or just path
+  --network <name>         Container network to join (repeatable). Use a compose
+                           network name or 'host' for host networking
   --context <name>         AI config context name (default: default)
   --shell <shell>          Override shell (default: /bin/zsh)
   --runtime <podman|docker> Override runtime detection
@@ -262,6 +270,7 @@ Examples:
   $0 build --distro tumbleweed --sets cpp-dev,ai-tools
   $0 run --mount /tmp/project
   $0 run --tag tumbleweed --context my-project --mount /home/user/work:/work
+  $0 run --network myproject_default --mount /path/to/project
   $0 list
   $0 clean
 EOF
