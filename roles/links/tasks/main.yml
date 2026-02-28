@@ -9,3 +9,19 @@
     cmd: "{{ dotfiles_dir }}/dotbot/bin/dotbot -d {{ dotfiles_dir }} -c {{ dotfiles_dir }}/links/desktop.conf.yaml"
   when: dotfiles_env in ['desktop', 'wsl']
   changed_when: true
+
+- name: Pre-load antidote zsh plugins
+  ansible.builtin.command:
+    cmd: zsh -c 'source {{ dotfiles_dir }}/zsh/antidote/antidote.zsh && antidote load {{ dotfiles_dir }}/zsh/.zsh_plugins.txt'
+  changed_when: true
+
+- name: Ensure packer.nvim is installed
+  ansible.builtin.git:
+    repo: https://github.com/wbthomason/packer.nvim
+    dest: "{{ ansible_env.HOME }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
+    depth: 1
+
+- name: Install neovim plugins
+  ansible.builtin.command:
+    cmd: nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+  changed_when: true
