@@ -24,6 +24,9 @@
     - role: cpp-dev
       tags: cpp-dev
       when: "'cpp-dev' in dotfiles_sets"
+    - role: mise
+      tags: mise
+      when: "'ruby-dev' in dotfiles_sets or 'node-dev' in dotfiles_sets or 'python-dev' in dotfiles_sets"
     - role: ruby-dev
       tags: ruby-dev
       when: "'ruby-dev' in dotfiles_sets"

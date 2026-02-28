@@ -16,6 +16,6 @@ For real computer installations, the matrix doesn't have to be full, for now we 
 
 We also want some "sets" that are not part of the basic console setup, but are selectable separately - for example not all console setups need all C/C++ development tools. WSL/Desktop setups should be "all inclusive", and contain all specific sets.
 
-It also supports building container images (`container.sh`) for isolated, reproducible environments — primarily for AI agents. These use the same Ansible roles but run via `install.sh --container`.
+It also supports building container images (`dcont`) for isolated, reproducible environments — primarily for AI agents. These use the same Ansible roles but run via `install.sh --container`. The `dcont` command is symlinked to `~/.local/bin/dcont` so it's available globally.
 
 Always keep the README up to date, but do not bloat it with unecessary information.

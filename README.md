@@ -60,9 +60,9 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | Set          | What it installs                                        |
 |--------------|---------------------------------------------------------|
 | `cpp-dev`    | gcc, clang, cmake, ninja, meson, flex, bison, and libs  |
-| `ruby-dev`   | ruby, rvm (Ubuntu), postgresql dev headers               |
-| `node-dev`   | nodejs, npm                                              |
-| `python-dev` | python3-dev, pip, pipenv                                 |
+| `ruby-dev`   | Ruby via mise, build dependencies                        |
+| `node-dev`   | Node.js (LTS) via mise                                   |
+| `python-dev` | Python via mise, python3-dev headers                     |
 | `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
 
 ## Ansible roles
@@ -78,9 +78,10 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `git-tools`     | git-tools      | —                                | git, tig, delta                                   |
 | `console-tools` | console-tools  | —                                | mc, ripgrep, fd, tmux, glances, go-task            |
 | `cpp-dev`       | cpp-dev        | `'cpp-dev' in dotfiles_sets`     | C/C++ toolchain                                   |
-| `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby development                                  |
-| `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js development                               |
-| `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python development                                |
+| `mise`          | mise           | any language dev set active       | mise universal version manager                    |
+| `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby via mise + build dependencies                |
+| `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js (LTS) via mise                            |
+| `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
@@ -127,7 +128,8 @@ The `links` role runs Dotbot with two config files:
 
 ## Managed configurations
 
-- **zsh** — antidote plugin manager, zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions, starship prompt
+- **zsh** — antidote plugin manager, zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions, starship prompt, mise activation
+- **mise** — universal version manager for Ruby, Node.js, Python (replaces rvm, system nodejs/npm, pip)
 - **Neovim** — Packer plugins, Treesitter, LSP (clangd), Telescope, nvim-tree, gitsigns, Solarized theme
 - **Git** — delta pager, zdiff3 merge style
 - **Ghostty** — Fira Code Nerd Font, Solarized Dark theme
@@ -137,7 +139,7 @@ The `links` role runs Dotbot with two config files:
 
 ## Container images
 
-The `container.sh` script builds container images provisioned with dotfiles — useful for AI agent environments or reproducible dev setups. It supports podman (preferred) and docker.
+The `dcont` command builds container images provisioned with dotfiles — useful for AI agent environments or reproducible dev setups. It supports podman (preferred) and docker. It is symlinked to `~/.local/bin/dcont` so it's available from anywhere.
 
 ### Supported distros
 
@@ -147,21 +149,23 @@ The `container.sh` script builds container images provisioned with dotfiles — 
 
 ```bash
 # Build with defaults (ubuntu-24.04, all sets)
-./container.sh build
+dcont build
 
 # Build a specific distro with specific sets
-./container.sh build --distro tumbleweed --sets cpp-dev,ai-tools
+dcont build --distro tumbleweed --sets cpp-dev,ai-tools
 
 # Run (ephemeral container with zsh)
-./container.sh run --mount /path/to/project
+dcont run --mount /path/to/project
 
 # Run with a named AI config context (persistent OAuth sessions)
-./container.sh run --context my-project --mount /home/user/work:/work
+dcont run --context my-project --mount /home/user/work:/work
 
 # List / clean images
-./container.sh list
-./container.sh clean
+dcont list
+dcont clean
 ```
+
+Zsh tab completion is provided for all subcommands and their flags.
 
 AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context gets its own subdirectory with separate `claude/` and `codex/` dirs mounted into the container.
 

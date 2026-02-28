@@ -1,0 +1,71 @@
+#compdef dcont
+
+_dcont_distros=(
+  'ubuntu-24.04:Ubuntu 24.04 LTS'
+  'ubuntu-22.04:Ubuntu 22.04 LTS'
+  'tumbleweed:openSUSE Tumbleweed'
+  'oracle-9:Oracle Linux 9'
+  'oracle-8:Oracle Linux 8'
+)
+
+_dcont_runtimes=(
+  'podman:Podman container runtime'
+  'docker:Docker container runtime'
+)
+
+_dcont_build() {
+  _arguments \
+    '--distro[Base distro]:distro:(('$_dcont_distros'))' \
+    '--sets[Comma-separated package sets]:sets:' \
+    '--tag[Image tag]:tag:' \
+    '--runtime[Container runtime]:runtime:(('$_dcont_runtimes'))'
+}
+
+_dcont_run() {
+  _arguments \
+    '--tag[Image tag to run]:tag:' \
+    '*--mount[Volume mount (host\:container or path)]:mount:_files -/' \
+    '--context[AI config context name]:context:' \
+    '--shell[Override shell]:shell:' \
+    '--runtime[Container runtime]:runtime:(('$_dcont_runtimes'))'
+}
+
+_dcont_list() {
+  _arguments \
+    '--runtime[Container runtime]:runtime:(('$_dcont_runtimes'))'
+}
+
+_dcont_clean() {
+  _arguments \
+    '--runtime[Container runtime]:runtime:(('$_dcont_runtimes'))'
+}
+
+_dcont() {
+  local -a commands=(
+    'build:Build a container image'
+    'run:Run a container from a built image'
+    'list:List dotfiles container images'
+    'clean:Remove dotfiles container images'
+    'help:Show usage information'
+  )
+
+  _arguments -C \
+    '1:command:->command' \
+    '*::arg:->args'
+
+  case "$state" in
+    command)
+      _describe -t commands 'dcont command' commands
+      ;;
+    args)
+      case "$words[1]" in
+        build) _dcont_build ;;
+        run)   _dcont_run ;;
+        list)  _dcont_list ;;
+        clean) _dcont_clean ;;
+      esac
+      ;;
+  esac
+}
+
+_dcont "$@"

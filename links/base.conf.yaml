@@ -15,3 +15,4 @@
     ~/.zshrc: zsh/.zshrc
     ~/.zsh_plugins.txt: zsh/.zsh_plugins.txt
     ~/.mc: mc
+    ~/.local/bin/dcont: dcont

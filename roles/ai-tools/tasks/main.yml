@@ -9,23 +9,14 @@
   ansible.builtin.shell: curl -fsSL https://claude.ai/install.sh | bash
   when: claude_check.rc != 0
 
-- name: Check if npm is available
-  ansible.builtin.command: which npm
-  register: npm_check
-  changed_when: false
-  failed_when: false
-
 - name: Check if codex is installed
-  ansible.builtin.command: which codex
+  ansible.builtin.shell: "{{ dotfiles_home }}/.local/bin/mise exec -- which codex"
   register: codex_check
   changed_when: false
   failed_when: false
-  when: npm_check.rc == 0
 
 - name: Install ChatGPT Codex
-  ansible.builtin.command: npm install -g @openai/codex
-  become: true
-  when:
-    - npm_check.rc == 0
-    - codex_check.rc is defined
-    - codex_check.rc != 0
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise exec -- npm install -g @openai/codex"
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_env.PATH }}"
+  when: codex_check.rc != 0

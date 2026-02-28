@@ -2,30 +2,13 @@
 - name: Load distro-specific package names
   ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
 
-- name: Add RVM PPA (Ubuntu)
-  ansible.builtin.apt_repository:
-    repo: ppa:rael-gc/rvm
-    state: present
-  become: true
-  when: dotfiles_distro == 'ubuntu'
-
-- name: Install Ruby development packages
+- name: Install Ruby build dependencies
   ansible.builtin.package:
     name: "{{ ruby_dev_packages }}"
     state: present
   become: true
 
-- name: Ensure rvm group exists (Ubuntu)
-  ansible.builtin.group:
-    name: rvm
-    state: present
-  become: true
-  when: dotfiles_distro == 'ubuntu'
-
-- name: Add user to rvm group (Ubuntu)
-  ansible.builtin.user:
-    name: "{{ dotfiles_user }}"
-    groups: rvm
-    append: true
-  become: true
-  when: dotfiles_distro == 'ubuntu'
+- name: Install Ruby via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global ruby@latest"
+  environment:
+    MISE_YES: "1"

@@ -1,4 +1,2 @@
 ---
-node_dev_packages:
-  - nodejs
-  - npm
+node_dev_packages: []

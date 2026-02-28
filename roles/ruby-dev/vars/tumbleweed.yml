@@ -1,5 +1,8 @@
 ---
 ruby_dev_packages:
-  - ruby
-  - ruby-devel
   - postgresql-devel
+  - libopenssl-devel
+  - libyaml-devel
+  - libffi-devel
+  - zlib-ng-compat-devel
+  - readline-devel

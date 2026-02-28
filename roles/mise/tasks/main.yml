@@ -1,0 +1,12 @@
+---
+- name: Check if mise is installed
+  ansible.builtin.command: which mise
+  register: mise_check
+  changed_when: false
+  failed_when: false
+
+- name: Install mise
+  ansible.builtin.shell: curl https://mise.run | sh
+  environment:
+    MISE_INSTALL_PATH: "{{ dotfiles_home }}/.local/bin/mise"
+  when: mise_check.rc != 0

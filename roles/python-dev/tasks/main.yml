@@ -7,3 +7,8 @@
     name: "{{ python_dev_packages }}"
     state: present
   become: true
+
+- name: Install Python via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global python@latest"
+  environment:
+    MISE_YES: "1"

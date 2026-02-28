@@ -1,4 +1,8 @@
 ---
 ruby_dev_packages:
-  - rvm
   - libpq-dev
+  - libssl-dev
+  - libyaml-dev
+  - libffi-dev
+  - zlib1g-dev
+  - libreadline-dev

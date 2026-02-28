@@ -11,7 +11,7 @@ tasks:
   container:build:
     desc: Build a container image
     cmds:
-      - ./container.sh build --distro {{.DISTRO}} --sets {{.SETS}} --tag {{.TAG}}
+      - ./dcont build --distro {{.DISTRO}} --sets {{.SETS}} --tag {{.TAG}}
         {{if .RUNTIME}}--runtime {{.RUNTIME}}{{end}}
     vars:
       RUNTIME: "{{.RUNTIME}}"
@@ -25,13 +25,13 @@ tasks:
           - tumbleweed
           - oracle-9
           - oracle-8
-        cmd: ./container.sh build --distro {{.ITEM}}
+        cmd: ./dcont build --distro {{.ITEM}}
 
   container:run:
     desc: Run a container from a built image
     interactive: true
     cmds:
-      - ./container.sh run --tag {{.TAG}} --context {{.CONTEXT}}
+      - ./dcont run --tag {{.TAG}} --context {{.CONTEXT}}
         {{if .MOUNT}}--mount {{.MOUNT}}{{end}}
         {{if .SHELL}}--shell {{.SHELL}}{{end}}
         {{if .RUNTIME}}--runtime {{.RUNTIME}}{{end}}
@@ -42,9 +42,9 @@ tasks:
   container:list:
     desc: List dotfiles container images
     cmds:
-      - ./container.sh list
+      - ./dcont list
 
   container:clean:
     desc: Remove all dotfiles container images
     cmds:
-      - ./container.sh clean
+      - ./dcont clean

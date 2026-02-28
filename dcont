@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASEDIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 detect_runtime() {
     if [ -n "$CONTAINER_RUNTIME" ]; then
@@ -105,11 +105,11 @@ cmd_build() {
     "$rt" cp "$BASEDIR/." "$build_container:/home/$host_user/.dotfiles"
     "$rt" exec "$build_container" chown -R "$host_uid:$host_gid" "/home/$host_user/.dotfiles"
 
-    "$rt" exec --user "$host_uid" "$build_container" \
+    "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" "$build_container" \
         git config --global --add safe.directory "/home/$host_user/.dotfiles"
 
     echo "==> Running install.sh --container --env console --sets $sets ..."
-    "$rt" exec --user "$host_uid" --workdir "/home/$host_user/.dotfiles" "$build_container" \
+    "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" --workdir "/home/$host_user/.dotfiles" "$build_container" \
         ./install.sh --container --env console --sets "$sets"
 
     echo "==> Committing image..."

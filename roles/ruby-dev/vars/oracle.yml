@@ -1,5 +1,8 @@
 ---
 ruby_dev_packages:
-  - ruby
-  - ruby-devel
   - libpq-devel
+  - openssl-devel
+  - libyaml-devel
+  - libffi-devel
+  - zlib-devel
+  - readline-devel
