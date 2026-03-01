@@ -1,0 +1,43 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Add Mozilla PPA signing key (Ubuntu)
+  ansible.builtin.apt_key:
+    url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+    state: present
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add Mozilla apt repository (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://packages.mozilla.org/apt mozilla main"
+    state: present
+    filename: mozilla
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Prefer Mozilla PPA over Ubuntu snap package (Ubuntu)
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/mozilla
+    content: |
+      Package: firefox*
+      Pin: origin packages.mozilla.org
+      Pin-Priority: 1001
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add geckodriver repository (Tumbleweed)
+  community.general.zypper_repository:
+    name: geckodriver
+    repo: https://download.opensuse.org/repositories/openSUSE:/infrastructure:/geckodriver/openSUSE_Tumbleweed/
+    auto_import_keys: true
+    state: present
+  become: true
+  when: dotfiles_distro == 'tumbleweed'
+
+- name: Install Selenium browser packages
+  ansible.builtin.package:
+    name: "{{ selenium_packages }}"
+    state: present
+  become: true

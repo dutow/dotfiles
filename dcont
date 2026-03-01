@@ -34,7 +34,7 @@ declare -A DISTRO_BOOTSTRAP=(
     [oracle-8]="dnf install -y python3 python3-pip ansible-core git sudo hostname"
 )
 
-ALL_SETS="cpp-dev,ruby-dev,node-dev,python-dev,ai-tools"
+ALL_SETS="cpp-dev,ruby-dev,node-dev,python-dev,selenium,ai-tools"
 DEFAULT_DISTRO="tumbleweed"
 IMAGE_PREFIX="localhost/dotfiles"
 
@@ -171,6 +171,7 @@ cmd_run() {
         run_args+=(--user "$(id -u):$(id -g)")
     fi
 
+    run_args+=(--shm-size=2g)
     run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude")
     run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex")
 

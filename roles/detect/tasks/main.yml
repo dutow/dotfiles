@@ -31,6 +31,7 @@
       - ruby-dev
       - node-dev
       - python-dev
+      - selenium
       - ai-tools
   when:
     - dotfiles_sets is not defined

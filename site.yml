@@ -36,6 +36,9 @@
     - role: python-dev
       tags: python-dev
       when: "'python-dev' in dotfiles_sets"
+    - role: selenium
+      tags: selenium
+      when: "'selenium' in dotfiles_sets"
 
     - role: ai-tools
       tags: ai-tools
