@@ -1,4 +1,5 @@
-theme = Solarized Dark
+theme = Solarized Dark Higher Contrast
 font-family = Fira Code Nerd Font
 font-size = 18
 keybind = shift+enter=text:\x1b\r
+shell-integration = none

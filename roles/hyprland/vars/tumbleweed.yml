@@ -1,6 +1,7 @@
 ---
 hyprland_packages:
   - hyprland
+  - hyprland-guiutils
   - uwsm
   - xdg-desktop-portal-hyprland
   - waybar
