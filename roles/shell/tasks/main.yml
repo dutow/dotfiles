@@ -8,6 +8,12 @@
     state: present
   become: true
 
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: "{{ dotfiles_user }}"
+    shell: /usr/bin/zsh
+  become: true
+
 - name: Check if starship is installed
   ansible.builtin.command: which starship
   register: starship_check
