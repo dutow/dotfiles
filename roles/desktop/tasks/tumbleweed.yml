@@ -27,3 +27,18 @@
   when: desktop_nvidia_gpu
   register: nvidia_install
   changed_when: "'Nothing to do' not in nvidia_install.stdout"
+
+- name: Install NVIDIA container toolkit
+  ansible.builtin.package:
+    name: nvidia-container-toolkit
+    state: present
+  become: true
+  when: desktop_nvidia_gpu
+
+- name: Generate NVIDIA CDI spec
+  ansible.builtin.command:
+    cmd: nvidia-ctk cdi generate --output /etc/cdi/nvidia.yaml
+  become: true
+  when: desktop_nvidia_gpu
+  register: cdi_generate
+  changed_when: cdi_generate.rc == 0
