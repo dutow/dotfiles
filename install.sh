@@ -7,6 +7,37 @@ cd "${BASEDIR}"
 EXTRA_VARS=()
 ANSIBLE_ARGS=()
 CONTAINER_MODE=false
+DISABLE_YUBIKEY=false
+YUBIKEY_USB_DEVICE=""
+
+YUBICO_VENDOR_ID="1050"
+
+find_yubikey_usb_device() {
+    for devpath in /sys/bus/usb/devices/*/idVendor; do
+        if [[ -f "$devpath" ]] && [[ "$(cat "$devpath")" == "$YUBICO_VENDOR_ID" ]]; then
+            YUBIKEY_USB_DEVICE="$(basename "$(dirname "$devpath")")"
+            return 0
+        fi
+    done
+    return 1
+}
+
+disable_yubikey() {
+    if ! find_yubikey_usb_device; then
+        echo "WARNING: No YubiKey found, skipping disable"
+        return
+    fi
+    echo "Disabling YubiKey (USB device: $YUBIKEY_USB_DEVICE)..."
+    echo "$YUBIKEY_USB_DEVICE" | sudo tee /sys/bus/usb/drivers/usb/unbind > /dev/null
+}
+
+enable_yubikey() {
+    if [[ -z "$YUBIKEY_USB_DEVICE" ]]; then
+        return
+    fi
+    echo "Re-enabling YubiKey (USB device: $YUBIKEY_USB_DEVICE)..."
+    echo "$YUBIKEY_USB_DEVICE" | sudo tee /sys/bus/usb/drivers/usb/bind > /dev/null
+}
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -24,6 +55,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --container)
             CONTAINER_MODE=true
+            shift
+            ;;
+        --disable-yubikey)
+            DISABLE_YUBIKEY=true
             shift
             ;;
         --tags)
@@ -90,6 +125,11 @@ fi
 
 if [ "$(id -u)" -ne 0 ] && [ "$CONTAINER_MODE" = false ]; then
     ANSIBLE_ARGS+=("--ask-become-pass")
+fi
+
+if [ "$DISABLE_YUBIKEY" = true ]; then
+    disable_yubikey
+    trap enable_yubikey EXIT
 fi
 
 ansible-playbook "${BASEDIR}/site.yml" "${ANSIBLE_ARGS[@]}"

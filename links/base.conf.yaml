@@ -17,4 +17,3 @@
     ~/.mc: mc
     ~/.local/bin/dcont: dcont
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
-    ~/.config/systemd/user/ssh-agent.service: systemd/ssh-agent.service

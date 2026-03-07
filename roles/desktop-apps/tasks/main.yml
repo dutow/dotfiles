@@ -12,10 +12,37 @@
     state: present
   become: true
 
-- name: Schedule weekly podman cleanup
-  ansible.builtin.cron:
-    name: "podman system prune"
-    job: "podman system prune --all --force > /dev/null 2>&1"
-    weekday: "0"
-    hour: "3"
-    minute: "0"
+- name: Install podman-cleanup timer service
+  ansible.builtin.copy:
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/podman-cleanup.service"
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Podman system prune
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/podman system prune --all --force
+
+- name: Install podman-cleanup timer
+  ansible.builtin.copy:
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/podman-cleanup.timer"
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Weekly podman cleanup
+
+      [Timer]
+      OnCalendar=Sun *-*-* 03:00:00
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+
+- name: Enable podman-cleanup timer
+  ansible.builtin.systemd:
+    name: podman-cleanup.timer
+    scope: user
+    daemon_reload: true
+    enabled: true
+    state: started
