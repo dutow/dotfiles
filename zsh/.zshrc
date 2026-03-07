@@ -16,6 +16,13 @@ setopt hist_ignore_dups
 setopt hist_ignore_space
 setopt share_history
 
+# Key bindings
+bindkey '^[[1;5D' backward-word    # Ctrl+Left
+bindkey '^[[1;5C' forward-word     # Ctrl+Right
+bindkey '^[[H'    beginning-of-line # Home
+bindkey '^[[F'    end-of-line       # End
+bindkey '^[[3~'   delete-char       # Delete
+
 # Completion
 fpath=(~/.dotfiles/zsh/completions $fpath)
 autoload -Uz compinit && compinit
