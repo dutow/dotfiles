@@ -1,0 +1,25 @@
+---
+- name: Disable targetpw so sudo authenticates as the calling user
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/00-no-targetpw
+    content: |
+      Defaults !targetpw
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  become: true
+
+- name: Create central FIDO2 auth directory
+  ansible.builtin.file:
+    path: /etc/Yubico
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Configure PAM for FIDO2 authentication
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/common-auth
+    insertbefore: '^auth\s+(required|requisite|sufficient)\s+pam_unix\.so'
+    firstmatch: true
+    line: 'auth	sufficient	pam_u2f.so authfile=/etc/Yubico/u2f_keys'
+    state: present
+  become: true

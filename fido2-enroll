@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CRED_DIR="$HOME/.config/Yubico"
+CRED_FILE="$CRED_DIR/u2f_keys"
+
+mkdir -p "$CRED_DIR"
+
+echo "Insert your FIDO2 key and press Enter to begin enrollment..."
+read -r
+
+if [[ -f "$CRED_FILE" ]]; then
+    echo "Existing credentials found. Adding another key..."
+    pamu2fcfg -n >> "$CRED_FILE"
+else
+    echo "Creating new credentials file..."
+    pamu2fcfg > "$CRED_FILE"
+fi
+
+chmod 600 "$CRED_FILE"
+echo "Enrollment complete. FIDO2 key registered for $(whoami)."
+echo ""
+echo "You can test it with: sudo echo success"

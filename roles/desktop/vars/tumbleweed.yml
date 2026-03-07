@@ -21,3 +21,7 @@ desktop_packages:
   - gstreamer-plugins-ugly
   - gstreamer-plugins-libav
   - gstreamer-plugins-vaapi
+  - libfido2-1
+  - libfido2-udev
+  - pam_u2f
+  - yubikey-manager

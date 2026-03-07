@@ -56,6 +56,10 @@
       tags: wsl
       when: "dotfiles_env == 'wsl'"
 
+    - role: fido2
+      tags: fido2
+      when: "dotfiles_env == 'desktop'"
+
     # Symlinks (always last)
     - role: links
       tags: links
