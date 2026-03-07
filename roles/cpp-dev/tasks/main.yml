@@ -7,3 +7,9 @@
     name: "{{ cpp_dev_packages }}"
     state: present
   become: true
+
+- name: Install Conan 2
+  ansible.builtin.pip:
+    name: conan
+    extra_args: --user
+    state: present

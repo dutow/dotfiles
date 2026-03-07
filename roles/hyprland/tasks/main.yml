@@ -52,6 +52,13 @@
       start-hyprland
   become: true
 
+- name: Set default target to graphical
+  ansible.builtin.command:
+    cmd: systemctl set-default graphical.target
+  become: true
+  changed_when: true
+  when: ansible_service_mgr == 'systemd'
+
 - name: Enable greetd service
   ansible.builtin.systemd:
     name: greetd

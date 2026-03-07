@@ -4,3 +4,4 @@ console_tools_packages:
   - ripgrep
   - fd-find
   - tmux
+  - lshw

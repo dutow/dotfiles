@@ -12,6 +12,22 @@
     state: present
   become: true
 
+- name: Switch multimedia packages to Packman vendor
+  ansible.builtin.command:
+    cmd: zypper --non-interactive dist-upgrade --from packman --allow-vendor-change
+  become: true
+  register: packman_switch
+  changed_when: "'Nothing to do' not in packman_switch.stdout"
+  when: dotfiles_distro == 'tumbleweed'
+
+- name: Install new recommended packages
+  ansible.builtin.command:
+    cmd: zypper --non-interactive install-new-recommends
+  become: true
+  register: new_recommends
+  changed_when: "'Nothing to do' not in new_recommends.stdout"
+  when: dotfiles_distro == 'tumbleweed'
+
 - name: Check if ghostty is installed
   ansible.builtin.command: which ghostty
   register: ghostty_check

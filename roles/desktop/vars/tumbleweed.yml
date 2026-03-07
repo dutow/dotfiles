@@ -5,3 +5,19 @@ desktop_packages:
   - Mesa-libEGL1
   - xwayland
   - Mesa-dri
+  - pipewire
+  - pipewire-pulseaudio
+  - pipewire-alsa
+  - wireplumber
+  - google-noto-sans-fonts
+  - google-noto-serif-fonts
+  - google-noto-sans-cjk-fonts
+  - liberation-fonts
+  - dejavu-fonts
+  - ffmpeg-7
+  - libavcodec-full
+  - gstreamer-plugins-good
+  - gstreamer-plugins-bad
+  - gstreamer-plugins-ugly
+  - gstreamer-plugins-libav
+  - gstreamer-plugins-vaapi

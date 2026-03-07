@@ -1,6 +1,6 @@
 ---
 dotfiles_dir: "{{ lookup('env', 'HOME') }}/.dotfiles"
-dotfiles_user: "{{ lookup('env', 'USER') }}"
+dotfiles_user: "{{ lookup('env', 'USER') | default(lookup('pipe', 'whoami'), true) }}"
 dotfiles_home: "{{ lookup('env', 'HOME') }}"
 
 desktop_nvidia_gpu: false

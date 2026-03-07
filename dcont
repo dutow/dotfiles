@@ -27,11 +27,11 @@ declare -A DISTRO_IMAGES=(
 )
 
 declare -A DISTRO_BOOTSTRAP=(
-    [ubuntu-24.04]="apt-get update && apt-get install -y python3 python3-pip ansible git sudo hostname"
-    [ubuntu-22.04]="apt-get update && apt-get install -y python3 python3-pip ansible git sudo hostname"
-    [tumbleweed]="zypper --non-interactive dup && zypper install -y python3 ansible git-core sudo hostname"
-    [oracle-9]="dnf install -y python3 python3-pip ansible-core git sudo hostname"
-    [oracle-8]="dnf install -y python3 python3-pip ansible-core git sudo hostname"
+    [ubuntu-24.04]="apt-get update && apt-get install -y python3 python3-pip ansible git sudo hostname locales && locale-gen en_US.UTF-8"
+    [ubuntu-22.04]="apt-get update && apt-get install -y python3 python3-pip ansible git sudo hostname locales && locale-gen en_US.UTF-8"
+    [tumbleweed]="zypper --non-interactive dup && zypper install -y python3 ansible git-core sudo hostname glibc-locale"
+    [oracle-9]="dnf install -y python3 python3-pip ansible-core git sudo hostname glibc-langpack-en"
+    [oracle-8]="dnf install -y python3 python3-pip ansible-core git sudo hostname glibc-langpack-en"
 )
 
 ALL_SETS="cpp-dev,ruby-dev,node-dev,python-dev,selenium,ai-tools"
@@ -114,6 +114,7 @@ cmd_build() {
         --change "USER $host_user" \
         --change "WORKDIR /home/$host_user" \
         --change "ENV CLAUDE_CONFIG_DIR=/home/$host_user/.claude" \
+        --change "ENV LANG=en_US.UTF-8" \
         --change 'CMD ["/bin/zsh"]' \
         "$build_container" "$image_name"
 
@@ -171,9 +172,12 @@ cmd_run() {
         run_args+=(--user "$(id -u):$(id -g)")
     fi
 
-    run_args+=(--shm-size=2g)
-    run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude")
-    run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex")
+    run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777)
+    local vol_suffix=""
+    [ "$rt" = "podman" ] && vol_suffix=":Z"
+
+    run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude${vol_suffix}")
+    run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex${vol_suffix}")
 
     for network in "${networks[@]}"; do
         run_args+=(--network "$network")
@@ -181,9 +185,9 @@ cmd_run() {
 
     for mount in "${mounts[@]}"; do
         if [[ "$mount" == *:* ]]; then
-            run_args+=(-v "$mount")
+            run_args+=(-v "$mount${vol_suffix}")
         else
-            run_args+=(-v "$mount:$mount")
+            run_args+=(-v "$mount:$mount${vol_suffix}")
         fi
     done
 

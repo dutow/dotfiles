@@ -1,4 +1,14 @@
 ---
+- name: Add Packman repository
+  community.general.zypper_repository:
+    name: packman
+    repo: https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Tumbleweed/
+    auto_import_keys: true
+    autorefresh: true
+    enabled: true
+    priority: 90
+  become: true
+
 - name: Add NVIDIA repository
   community.general.zypper_repository:
     name: NVIDIA

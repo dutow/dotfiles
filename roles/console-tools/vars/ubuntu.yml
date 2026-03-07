@@ -5,3 +5,4 @@ console_tools_packages:
   - fd-find
   - tmux
   - glances
+  - lshw
