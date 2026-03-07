@@ -4,6 +4,7 @@ path=(~/.local/bin $path)
 
 # Environment
 export EDITOR=nvim
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 export DOTFILES_AICONT_DIR="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
 
 # History

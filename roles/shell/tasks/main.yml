@@ -14,6 +14,14 @@
     shell: /usr/bin/zsh
   become: true
 
+- name: Enable ssh-agent systemd user service
+  ansible.builtin.systemd:
+    name: ssh-agent
+    scope: user
+    enabled: true
+    state: started
+  when: ansible_service_mgr == 'systemd'
+
 - name: Check if starship is installed
   ansible.builtin.command: which starship
   register: starship_check
