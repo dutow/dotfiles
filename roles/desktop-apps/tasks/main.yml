@@ -11,3 +11,11 @@
     name: "{{ desktop_apps_packages }}"
     state: present
   become: true
+
+- name: Schedule weekly podman cleanup
+  ansible.builtin.cron:
+    name: "podman system prune"
+    job: "podman system prune --all --force > /dev/null 2>&1"
+    weekday: "0"
+    hour: "3"
+    minute: "0"

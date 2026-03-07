@@ -23,6 +23,11 @@ autoload -Uz compinit && compinit
 source ~/.dotfiles/zsh/antidote/antidote.zsh
 antidote load ~/.dotfiles/zsh/.zsh_plugins.txt
 
+# git-subrepo
+if [[ -f ~/.git-subrepo/.rc ]]; then
+  source ~/.git-subrepo/.rc
+fi
+
 # mise (version manager)
 if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"

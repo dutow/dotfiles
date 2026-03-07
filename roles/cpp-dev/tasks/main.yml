@@ -8,8 +8,16 @@
     state: present
   become: true
 
-- name: Install Conan 2
-  ansible.builtin.pip:
-    name: conan
-    extra_args: --user
-    state: present
+- name: Ensure Python is available via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global python@latest"
+  environment:
+    MISE_YES: "1"
+  register: mise_python
+  changed_when: "'installed' in mise_python.stderr"
+
+- name: Install Conan 2 via mise python
+  ansible.builtin.shell: "{{ dotfiles_home }}/.local/bin/mise exec python -- pip install --user conan"
+  environment:
+    MISE_YES: "1"
+  args:
+    creates: "{{ dotfiles_home }}/.local/bin/conan"

@@ -8,3 +8,4 @@
     ~/.config/ghostty: ghostty
     ~/.Xresources: Xresources
     ~/.fonts: fonts
+    ~/.config/containers/storage.conf: containers/storage.conf
