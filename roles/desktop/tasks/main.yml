@@ -47,7 +47,7 @@
 
     - name: Download ghostty .deb
       ansible.builtin.get_url:
-        url: "{{ ghostty_release.json.assets | selectattr('name', 'match', 'ghostty_.*_amd64_' ~ ansible_distribution_version ~ '\\.deb') | map(attribute='browser_download_url') | first }}"
+        url: "{{ ghostty_release.json.assets | selectattr('name', 'match', 'ghostty_.*_amd64_' ~ ansible_facts.distribution_version ~ '\\.deb') | map(attribute='browser_download_url') | first }}"
         dest: /tmp/ghostty.deb
         mode: '0644'
 

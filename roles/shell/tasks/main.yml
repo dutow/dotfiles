@@ -16,17 +16,17 @@
 
 - name: Create systemd user directory
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    path: "{{ ansible_facts.env.HOME }}/.config/systemd/user"
     state: directory
     mode: "0755"
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Install ssh-agent systemd user service
   ansible.builtin.copy:
     src: "{{ dotfiles_dir }}/systemd/ssh-agent.service"
-    dest: "{{ ansible_env.HOME }}/.config/systemd/user/ssh-agent.service"
+    dest: "{{ ansible_facts.env.HOME }}/.config/systemd/user/ssh-agent.service"
     mode: "0644"
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Enable ssh-agent systemd user service
   ansible.builtin.systemd:
@@ -35,7 +35,7 @@
     daemon_reload: true
     enabled: true
     state: started
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Check if starship is installed
   ansible.builtin.command: which starship

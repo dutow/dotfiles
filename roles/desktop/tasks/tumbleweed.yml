@@ -28,6 +28,23 @@
   register: nvidia_install
   changed_when: "'Nothing to do' not in nvidia_install.stdout"
 
+- name: Import NVIDIA Container Toolkit GPG key
+  ansible.builtin.rpm_key:
+    key: https://nvidia.github.io/libnvidia-container/gpgkey
+    state: present
+  become: true
+  when: desktop_nvidia_gpu
+
+- name: Add NVIDIA Container Toolkit repository
+  community.general.zypper_repository:
+    name: nvidia-container-toolkit
+    repo: https://nvidia.github.io/libnvidia-container/stable/rpm/x86_64
+    auto_import_keys: true
+    autorefresh: true
+    enabled: true
+  become: true
+  when: desktop_nvidia_gpu
+
 - name: Install NVIDIA container toolkit
   ansible.builtin.package:
     name: nvidia-container-toolkit

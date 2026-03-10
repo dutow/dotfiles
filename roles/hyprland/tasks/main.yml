@@ -57,7 +57,7 @@
     cmd: systemctl set-default graphical.target
   become: true
   changed_when: true
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Enable greetd service
   ansible.builtin.systemd:
@@ -65,7 +65,7 @@
     enabled: true
     state: started
   become: true
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Create hypr config directory
   ansible.builtin.file:

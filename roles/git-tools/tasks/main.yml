@@ -64,5 +64,5 @@
 - name: Clone git-subrepo
   ansible.builtin.git:
     repo: https://github.com/ingydotnet/git-subrepo.git
-    dest: "{{ ansible_env.HOME }}/.git-subrepo"
+    dest: "{{ ansible_facts.env.HOME }}/.git-subrepo"
     version: master

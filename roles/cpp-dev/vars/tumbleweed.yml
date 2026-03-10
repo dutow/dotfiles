@@ -12,4 +12,28 @@ cpp_dev_packages:
   - pkg-config
   - libcurl-devel
   - libopenssl-devel
+  - Mesa-libGL-devel
+  - xorgproto-devel
+  - libxcb-devel
+  - libfontenc-devel
+  - libXaw-devel
+  - libXcomposite-devel
+  - libXcursor-devel
+  - libXdmcp-devel
+  - libXtst-devel
+  - libXinerama-devel
+  - libxkbfile-devel
+  - libXrandr-devel
+  - libXres-devel
+  - libXss-devel
+  - libXdamage-devel
+  - libXxf86vm-devel
+  - libXv-devel
+  - xcb-util-wm-devel
+  - xcb-util-image-devel
+  - xcb-util-keysyms-devel
+  - xcb-util-renderutil-devel
+  - xcb-util-devel
+  - xcb-util-cursor-devel
+  - shaderc
   - patterns-devel-base-devel_basis

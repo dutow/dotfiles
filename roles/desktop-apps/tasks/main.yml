@@ -14,7 +14,7 @@
 
 - name: Install podman-cleanup timer service
   ansible.builtin.copy:
-    dest: "{{ ansible_env.HOME }}/.config/systemd/user/podman-cleanup.service"
+    dest: "{{ ansible_facts.env.HOME }}/.config/systemd/user/podman-cleanup.service"
     mode: "0644"
     content: |
       [Unit]
@@ -26,7 +26,7 @@
 
 - name: Install podman-cleanup timer
   ansible.builtin.copy:
-    dest: "{{ ansible_env.HOME }}/.config/systemd/user/podman-cleanup.timer"
+    dest: "{{ ansible_facts.env.HOME }}/.config/systemd/user/podman-cleanup.timer"
     mode: "0644"
     content: |
       [Unit]

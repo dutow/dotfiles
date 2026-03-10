@@ -18,7 +18,7 @@
 - name: Ensure packer.nvim is installed
   ansible.builtin.git:
     repo: https://github.com/wbthomason/packer.nvim
-    dest: "{{ ansible_env.HOME }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
+    dest: "{{ ansible_facts.env.HOME }}/.local/share/nvim/site/pack/packer/start/packer.nvim"
     depth: 1
 
 - name: Install neovim plugins

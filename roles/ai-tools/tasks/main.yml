@@ -18,5 +18,5 @@
 - name: Install ChatGPT Codex
   ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise exec -- npm install -g @openai/codex"
   environment:
-    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
   when: codex_check.rc != 0

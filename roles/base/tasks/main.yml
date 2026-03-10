@@ -4,14 +4,14 @@
 
 - name: Enable EPEL repository (Oracle Linux)
   ansible.builtin.dnf:
-    name: oracle-epel-release-el{{ ansible_distribution_major_version }}
+    name: oracle-epel-release-el{{ ansible_facts.distribution_major_version }}
     state: present
   become: true
   when: dotfiles_distro == 'oracle'
 
 - name: Enable CodeReady Builder repository (Oracle Linux)
   ansible.builtin.command:
-    cmd: dnf config-manager --set-enabled ol{{ ansible_distribution_major_version }}_codeready_builder
+    cmd: dnf config-manager --set-enabled ol{{ ansible_facts.distribution_major_version }}_codeready_builder
   become: true
   changed_when: true
   when: dotfiles_distro == 'oracle'

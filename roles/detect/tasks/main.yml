@@ -1,11 +1,11 @@
 ---
 - name: Map distribution to distro key
   ansible.builtin.set_fact:
-    dotfiles_distro: "{{ distro_key_map[ansible_distribution] | default('unknown') }}"
+    dotfiles_distro: "{{ distro_key_map[ansible_facts.distribution] | default('unknown') }}"
 
 - name: Fail if unsupported distribution
   ansible.builtin.fail:
-    msg: "Unsupported distribution: {{ ansible_distribution }}. Supported: {{ distro_key_map.keys() | list }}"
+    msg: "Unsupported distribution: {{ ansible_facts.distribution }}. Supported: {{ distro_key_map.keys() | list }}"
   when: dotfiles_distro == 'unknown'
 
 - name: Check for WSL
@@ -47,7 +47,7 @@
 - name: Print detected configuration
   ansible.builtin.debug:
     msg:
-      - "Distribution: {{ ansible_distribution }} -> {{ dotfiles_distro }}"
+      - "Distribution: {{ ansible_facts.distribution }} -> {{ dotfiles_distro }}"
       - "Environment:  {{ dotfiles_env }}"
       - "WSL:          {{ is_wsl }}"
       - "Sets:         {{ dotfiles_sets }}"
