@@ -1,0 +1,7 @@
+---
+kubernetes_packages:
+  - minikube
+  - kubernetes-client
+  - helm
+  - docker
+  - docker-compose

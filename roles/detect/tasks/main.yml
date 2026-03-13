@@ -33,6 +33,7 @@
       - python-dev
       - selenium
       - ai-tools
+      - kubernetes
   when:
     - dotfiles_sets is not defined
     - dotfiles_env in ['desktop', 'wsl']

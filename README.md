@@ -65,6 +65,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `python-dev` | Python via mise, python3-dev headers                     |
 | `selenium`   | Firefox + GeckoDriver for headless browser automation        |
 | `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
+| `kubernetes` | minikube, kubectl, helm                                   |
 
 ## Ansible roles
 
@@ -85,6 +86,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
 | `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox + GeckoDriver for Selenium                   |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
+| `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | minikube, kubectl, helm                              |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |
@@ -146,6 +148,16 @@ The `dcont` command builds container images provisioned with dotfiles — useful
 ### Supported distros
 
 `ubuntu-24.04` (default), `ubuntu-22.04`, `tumbleweed`, `oracle-9`, `oracle-8`
+
+### Setup
+
+Container builds require a sudo password for the in-container user. Generate `.container_sudo_password` (gitignored) containing a SHA-512 hash:
+
+```bash
+openssl passwd -6 'your-password' > .container_sudo_password
+```
+
+You'll be prompted for the plaintext password at build time (verified against the hash).
 
 ### Usage
 

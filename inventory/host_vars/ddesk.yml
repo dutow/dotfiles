@@ -7,3 +7,4 @@ dotfiles_sets:
   - node-dev
   - python-dev
   - ai-tools
+  - kubernetes

@@ -16,3 +16,4 @@ cpp_dev_packages:
   - libcurl4-openssl-dev
   - libipc-run-perl
   - libssl-dev
+  - liblz4-dev

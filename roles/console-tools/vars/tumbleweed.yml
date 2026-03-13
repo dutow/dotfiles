@@ -6,3 +6,5 @@ console_tools_packages:
   - tmux
   - glances
   - lshw
+  - perl-IPC-Run
+  - liblz4-1

@@ -59,3 +59,4 @@
   when: desktop_nvidia_gpu
   register: cdi_generate
   changed_when: cdi_generate.rc == 0
+  failed_when: false

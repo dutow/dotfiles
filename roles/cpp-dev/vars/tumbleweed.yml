@@ -4,6 +4,10 @@ cpp_dev_packages:
   - gcc-c++
   - clang
   - lldb
+  - gdb
+  - strace
+  - debuginfod-client
+  - debuginfod-profile
   - cmake
   - ninja
   - meson
@@ -36,4 +40,15 @@ cpp_dev_packages:
   - xcb-util-devel
   - xcb-util-cursor-devel
   - shaderc
+  - wayland-devel
+  - wayland-protocols-devel
+  - libxkbcommon-x11-0
+  - libxkbregistry0
+  - renderdoc
+  - xwayland
+  - gtk3-devel
+  - adwaita-icon-theme
+  - librsvg-2-2
+  - glycin-loaders
   - patterns-devel-base-devel_basis
+  - liblz4-devel

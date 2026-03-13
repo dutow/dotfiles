@@ -12,3 +12,4 @@ cpp_dev_packages:
   - pkgconfig
   - libcurl-devel
   - openssl-devel
+  - lz4-devel

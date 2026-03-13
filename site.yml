@@ -43,6 +43,9 @@
     - role: ai-tools
       tags: ai-tools
       when: "'ai-tools' in dotfiles_sets"
+    - role: kubernetes
+      tags: kubernetes
+      when: "'kubernetes' in dotfiles_sets"
     - role: desktop
       tags: desktop
       when: "dotfiles_env in ['desktop', 'wsl']"

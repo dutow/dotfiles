@@ -28,6 +28,8 @@ fpath=(~/.dotfiles/zsh/completions $fpath)
 autoload -Uz compinit && compinit
 
 # Antidote (plugin manager)
+export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+[[ -d "$ZSH_CACHE_DIR" ]] || mkdir -p "$ZSH_CACHE_DIR"
 source ~/.dotfiles/zsh/antidote/antidote.zsh
 antidote load ~/.dotfiles/zsh/.zsh_plugins.txt
 

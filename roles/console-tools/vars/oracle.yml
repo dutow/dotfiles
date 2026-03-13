@@ -5,3 +5,5 @@ console_tools_packages:
   - fd-find
   - tmux
   - lshw
+  - perl-IPC-Run
+  - lz4-libs

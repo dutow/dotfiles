@@ -68,6 +68,19 @@ cmd_build() {
     local bootstrap="${DISTRO_BOOTSTRAP[$distro]}"
     local build_container="dotfiles-build-$$"
 
+    local sudo_password_file="$BASEDIR/.container_sudo_password"
+    if [ ! -f "$sudo_password_file" ]; then
+        echo "ERROR: $sudo_password_file not found." >&2
+        echo "Generate it with: openssl passwd -6 'your-password' > .container_sudo_password" >&2
+        exit 1
+    fi
+    local sudo_password_hash
+    sudo_password_hash=$(<"$sudo_password_file")
+    if [ -z "$sudo_password_hash" ]; then
+        echo "ERROR: $sudo_password_file is empty." >&2
+        exit 1
+    fi
+
     local host_user
     host_user=$(id -un)
     local host_uid
@@ -106,8 +119,19 @@ cmd_build() {
         git config --global --add safe.directory "/home/$host_user/.dotfiles"
 
     echo "==> Running install.sh --container --env console --sets $sets ..."
-    "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" --workdir "/home/$host_user/.dotfiles" "$build_container" \
+    "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" \
+        --workdir "/home/$host_user/.dotfiles" "$build_container" \
         ./install.sh --container --env console --sets "$sets"
+
+    echo "==> Locking down sudo..."
+    printf '%s:%s\n' "$host_user" "$sudo_password_hash" | "$rt" exec -i "$build_container" chpasswd --encrypted
+    # Verify password was set (account should not be locked)
+    "$rt" exec "$build_container" bash -c "passwd -S $host_user"
+    "$rt" exec "$build_container" bash -c "
+        echo 'Defaults !targetpw' > /etc/sudoers.d/$host_user
+        echo '$host_user ALL=(ALL) ALL' >> /etc/sudoers.d/$host_user
+        chmod 0440 /etc/sudoers.d/$host_user
+    "
 
     echo "==> Committing image..."
     "$rt" commit \
@@ -115,6 +139,7 @@ cmd_build() {
         --change "WORKDIR /home/$host_user" \
         --change "ENV CLAUDE_CONFIG_DIR=/home/$host_user/.claude" \
         --change "ENV LANG=en_US.UTF-8" \
+        --change "ENV DEBUGINFOD_URLS=https://debuginfod.opensuse.org/" \
         --change 'CMD ["/bin/zsh"]' \
         "$build_container" "$image_name"
 
@@ -174,9 +199,9 @@ cmd_run() {
         run_args+=(--user "$(id -u):$(id -g)")
     fi
 
-    run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777)
+    run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined)
     local vol_suffix=""
-    [ "$rt" = "podman" ] && vol_suffix=":Z"
+    [ "$rt" = "podman" ] && vol_suffix=":z"
 
     run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude${vol_suffix}")
     run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex${vol_suffix}")
@@ -186,7 +211,26 @@ cmd_run() {
     done
 
     if [ "$gpu" = true ]; then
-        run_args+=(--device nvidia.com/gpu=all)
+        run_args+=(--device nvidia.com/gpu=all --security-opt label=disable)
+
+        # Pass through NVIDIA Vulkan ICD
+        local nvidia_icd="/usr/share/vulkan/icd.d/nvidia_icd.x86_64.json"
+        if [ -f "$nvidia_icd" ]; then
+            run_args+=(-v "$nvidia_icd:$nvidia_icd:ro")
+        fi
+
+        # Pass through Wayland display
+        if [ -n "$WAYLAND_DISPLAY" ]; then
+            run_args+=(-e "WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+                       -e "XDG_RUNTIME_DIR=/run/user/$(id -u)"
+                       -v "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/run/user/$(id -u)/${WAYLAND_DISPLAY}")
+        fi
+
+        # Pass through X11 display as fallback
+        if [ -n "$DISPLAY" ]; then
+            run_args+=(-e "DISPLAY=$DISPLAY")
+            [ -e /tmp/.X11-unix ] && run_args+=(-v "/tmp/.X11-unix:/tmp/.X11-unix")
+        fi
     fi
 
     for mount in "${mounts[@]}"; do

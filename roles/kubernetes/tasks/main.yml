@@ -1,0 +1,33 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Kubernetes tools
+  ansible.builtin.package:
+    name: "{{ kubernetes_packages }}"
+    state: present
+  become: true
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+  become: true
+
+- name: Add user to docker group
+  ansible.builtin.user:
+    name: "{{ dotfiles_user }}"
+    groups: docker
+    append: true
+  become: true
+
+- name: Check if k3d is installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3d
+  register: k3d_check
+
+- name: Install k3d
+  ansible.builtin.shell: curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | PATH="/usr/local/bin:$PATH" bash
+  become: true
+  when: not k3d_check.stat.exists

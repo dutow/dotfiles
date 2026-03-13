@@ -17,3 +17,4 @@
     ~/.mc: mc
     ~/.local/bin/dcont: dcont
     ~/.claude/CLAUDE.md: claude/CLAUDE.md
+    ~/.tmux.conf: tmux/.tmux.conf

@@ -12,3 +12,4 @@
   ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global python@latest"
   environment:
     MISE_YES: "1"
+    PYTHON_CONFIGURE_OPTS: "--enable-shared"
