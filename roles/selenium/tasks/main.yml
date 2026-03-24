@@ -27,15 +27,6 @@
   become: true
   when: dotfiles_distro == 'ubuntu'
 
-- name: Add geckodriver repository (Tumbleweed)
-  community.general.zypper_repository:
-    name: geckodriver
-    repo: https://download.opensuse.org/repositories/openSUSE:/infrastructure:/geckodriver/openSUSE_Tumbleweed/
-    auto_import_keys: true
-    state: present
-  become: true
-  when: dotfiles_distro == 'tumbleweed'
-
 - name: Install Selenium browser packages
   ansible.builtin.package:
     name: "{{ selenium_packages }}"

@@ -18,6 +18,7 @@
   become: true
   register: packman_switch
   changed_when: "'Nothing to do' not in packman_switch.stdout"
+  failed_when: false
   when: dotfiles_distro == 'tumbleweed'
 
 - name: Install new recommended packages

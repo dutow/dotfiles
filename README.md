@@ -63,9 +63,9 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `ruby-dev`   | Ruby via mise, build dependencies                        |
 | `node-dev`   | Node.js (LTS) via mise                                   |
 | `python-dev` | Python via mise, python3-dev headers                     |
-| `selenium`   | Firefox + GeckoDriver for headless browser automation        |
+| `selenium`   | Firefox for headless browser automation                       |
 | `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
-| `kubernetes` | minikube, kubectl, helm                                   |
+| `kubernetes` | Docker, minikube, kubectl, helm, k3d                      |
 
 ## Ansible roles
 
@@ -84,9 +84,9 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby via mise + build dependencies                |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js (LTS) via mise                            |
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
-| `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox + GeckoDriver for Selenium                   |
+| `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox for headless browser automation              |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
-| `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | minikube, kubectl, helm                              |
+| `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | Docker, minikube, kubectl, helm, k3d                 |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |

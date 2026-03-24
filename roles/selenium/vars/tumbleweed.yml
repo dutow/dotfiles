@@ -1,3 +1,2 @@
 selenium_packages:
   - MozillaFirefox
-  - geckodriver

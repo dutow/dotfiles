@@ -2,11 +2,12 @@
 - name: Load distro-specific package names
   ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
 
-- name: Install Kubernetes tools
+- name: Install Kubernetes distro packages
   ansible.builtin.package:
     name: "{{ kubernetes_packages }}"
     state: present
   become: true
+  when: kubernetes_packages | length > 0
 
 - name: Enable and start Docker service
   ansible.builtin.systemd:
@@ -14,6 +15,9 @@
     enabled: true
     state: started
   become: true
+  when:
+    - ansible_service_mgr == 'systemd'
+    - kubernetes_packages | length > 0
 
 - name: Add user to docker group
   ansible.builtin.user:
@@ -21,6 +25,44 @@
     groups: docker
     append: true
   become: true
+  when: kubernetes_packages | length > 0
+
+- name: Check if kubectl is installed
+  ansible.builtin.command: which kubectl
+  register: kubectl_check
+  changed_when: false
+  failed_when: false
+
+- name: Install kubectl
+  ansible.builtin.shell: |
+    curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
+    chmod +x /usr/local/bin/kubectl
+  become: true
+  when: kubectl_check.rc != 0
+
+- name: Check if helm is installed
+  ansible.builtin.command: which helm
+  register: helm_check
+  changed_when: false
+  failed_when: false
+
+- name: Install helm
+  ansible.builtin.shell: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  become: true
+  when: helm_check.rc != 0
+
+- name: Check if minikube is installed
+  ansible.builtin.command: which minikube
+  register: minikube_check
+  changed_when: false
+  failed_when: false
+
+- name: Install minikube
+  ansible.builtin.shell: |
+    curl -fsSL https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o /usr/local/bin/minikube
+    chmod +x /usr/local/bin/minikube
+  become: true
+  when: minikube_check.rc != 0
 
 - name: Check if k3d is installed
   ansible.builtin.stat:
