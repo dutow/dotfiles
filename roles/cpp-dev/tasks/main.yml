@@ -21,3 +21,10 @@
     MISE_YES: "1"
   args:
     creates: "{{ dotfiles_home }}/.local/bin/conan"
+
+- name: Install lit via mise python
+  ansible.builtin.shell: "{{ dotfiles_home }}/.local/bin/mise exec python -- pip install --user lit"
+  environment:
+    MISE_YES: "1"
+  args:
+    creates: "{{ dotfiles_home }}/.local/bin/lit"

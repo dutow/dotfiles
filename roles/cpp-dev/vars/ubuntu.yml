@@ -4,8 +4,10 @@ cpp_dev_packages:
   - clang
   - clangd
   - clang-format
+  - libclang-dev
   - libc++-dev
   - libc++abi-dev
+  - llvm-dev
   - lldb
   - cmake
   - ninja-build

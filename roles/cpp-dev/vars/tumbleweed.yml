@@ -3,6 +3,8 @@ cpp_dev_packages:
   - gcc
   - gcc-c++
   - clang
+  - clang21-devel
+  - llvm21-devel
   - lldb
   - gdb
   - strace
