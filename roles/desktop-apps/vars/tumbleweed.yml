@@ -5,6 +5,7 @@ desktop_apps_packages:
   - keepassxc
   - code
   - podman
+  - podman-compose
   - pavucontrol
   - nomacs
 

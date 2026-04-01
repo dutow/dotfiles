@@ -1,0 +1,12 @@
+#!/bin/bash
+# Returns 0 (success) if inside an SSH session, 1 if local.
+# PAM uses success=1 to skip the next module (pam_u2f) when in SSH.
+pid=$$
+while [ "$pid" -gt 1 ]; do
+    if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "sshd" ]; then
+        exit 0
+    fi
+    pid=$(awk '{print $4}' /proc/$pid/stat 2>/dev/null)
+    [ -z "$pid" ] && break
+done
+exit 1

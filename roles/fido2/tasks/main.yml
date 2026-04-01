@@ -15,6 +15,22 @@
     mode: '0755'
   become: true
 
+- name: Deploy local-session check script for PAM
+  ansible.builtin.copy:
+    src: check-local-session
+    dest: /usr/local/bin/check-local-session
+    mode: '0755'
+  become: true
+
+- name: Configure PAM to skip FIDO2 in SSH sessions
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/common-auth
+    insertbefore: '^auth\s.+pam_u2f\.so'
+    firstmatch: true
+    line: 'auth	[success=1 default=ignore]	pam_exec.so quiet /usr/local/bin/check-local-session'
+    state: present
+  become: true
+
 - name: Configure PAM for FIDO2 authentication
   ansible.builtin.lineinfile:
     path: /etc/pam.d/common-auth

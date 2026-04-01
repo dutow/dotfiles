@@ -4,7 +4,10 @@ path=(~/.local/bin $path)
 
 # Environment
 export EDITOR=nvim
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+# Preserve forwarded SSH agent when connected via SSH; use local agent otherwise
+if [[ -z "$SSH_CONNECTION" ]] || [[ -z "$SSH_AUTH_SOCK" ]]; then
+  export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+fi
 export DOTFILES_AICONT_DIR="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
 
 # History
