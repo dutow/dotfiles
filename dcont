@@ -200,18 +200,17 @@ cmd_run() {
     fi
 
     run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined)
-    local vol_suffix=""
-    [ "$rt" = "podman" ] && vol_suffix=":z"
+    [ "$rt" = "podman" ] && run_args+=(--security-opt label=disable)
 
-    run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude${vol_suffix}")
-    run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex${vol_suffix}")
+    run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude")
+    run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex")
 
     for network in "${networks[@]}"; do
         run_args+=(--network "$network")
     done
 
     if [ "$gpu" = true ]; then
-        run_args+=(--device nvidia.com/gpu=all --security-opt label=disable)
+        run_args+=(--device nvidia.com/gpu=all)
 
         # Pass through NVIDIA Vulkan ICD
         local nvidia_icd="/usr/share/vulkan/icd.d/nvidia_icd.x86_64.json"
@@ -235,9 +234,9 @@ cmd_run() {
 
     for mount in "${mounts[@]}"; do
         if [[ "$mount" == *:* ]]; then
-            run_args+=(-v "$mount${vol_suffix}")
+            run_args+=(-v "$mount")
         else
-            run_args+=(-v "$mount:$mount${vol_suffix}")
+            run_args+=(-v "$mount:$mount")
         fi
     done
 
