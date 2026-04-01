@@ -4,6 +4,7 @@ console_tools_packages:
   - ripgrep
   - fd-find
   - tmux
+  - ncurses-term
   - glances
   - lshw
   - libipc-run-perl
