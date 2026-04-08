@@ -6,9 +6,19 @@ path=(~/.local/bin $path)
 export EDITOR=nvim
 # Preserve forwarded SSH agent when connected via SSH; use local agent otherwise
 if [[ -z "$SSH_CONNECTION" ]] || [[ -z "$SSH_AUTH_SOCK" ]]; then
-  export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+  if [[ -n "$XDG_RUNTIME_DIR" && -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
+    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+  fi
 fi
 export DOTFILES_AICONT_DIR="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
+
+# Load SSH keys into agent on first interactive shell (console/WSL)
+# Desktop (Hyprland) handles this via exec-once with askpass
+if [[ -n "$SSH_AUTH_SOCK" && -z "$SSH_CONNECTION" && -z "$HYPRLAND_INSTANCE_SIGNATURE" ]]; then
+  if ! ssh-add -l &>/dev/null && [[ -t 0 ]]; then
+    SSH_ASKPASS_REQUIRE=prefer ssh-add
+  fi
+fi
 
 # History
 HISTFILE=~/.zsh_history

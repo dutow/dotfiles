@@ -16,3 +16,4 @@ hyprland_packages:
   - polkit-gnome
   - greetd
   - gtkgreet
+  - lxqt-openssh-askpass
