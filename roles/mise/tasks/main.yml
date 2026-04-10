@@ -10,3 +10,8 @@
   environment:
     MISE_INSTALL_PATH: "{{ dotfiles_home }}/.local/bin/mise"
   when: mise_check.rc != 0
+
+- name: Update mise to latest
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise self-update --yes"
+  register: mise_self_update
+  changed_when: "'Updated mise' in mise_self_update.stdout or 'updated' in mise_self_update.stdout"
