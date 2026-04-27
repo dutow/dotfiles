@@ -4,8 +4,9 @@ set -e
 BASEDIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 detect_runtime() {
-    if [ -n "$CONTAINER_RUNTIME" ]; then
-        echo "$CONTAINER_RUNTIME"
+    local override="${1:-${DCONT_RUNTIME:-}}"
+    if [ -n "$override" ]; then
+        echo "$override"
         return
     fi
     if command -v podman &>/dev/null; then
@@ -59,9 +60,8 @@ cmd_build() {
         exit 1
     fi
 
-    [ -n "$runtime" ] && CONTAINER_RUNTIME="$runtime"
     local rt
-    rt=$(detect_runtime)
+    rt=$(detect_runtime "$runtime")
     tag="${tag:-$distro}"
     local image_name="${IMAGE_PREFIX}-${tag}"
     local base_image="${DISTRO_IMAGES[$distro]}"
@@ -118,6 +118,13 @@ cmd_build() {
     "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" "$build_container" \
         git config --global --add safe.directory "/home/$host_user/.dotfiles"
 
+    echo "==> Setting up .aicontext symlinks..."
+    "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" "$build_container" bash -c "
+        mkdir -p /home/$host_user/.aicontext/claude /home/$host_user/.aicontext/codex
+        ln -sfn /home/$host_user/.aicontext/claude /home/$host_user/.claude
+        ln -sfn /home/$host_user/.aicontext/codex /home/$host_user/.codex
+    "
+
     echo "==> Running install.sh --container --env console --sets $sets ..."
     "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" \
         --workdir "/home/$host_user/.dotfiles" "$build_container" \
@@ -149,13 +156,32 @@ cmd_build() {
 }
 
 cmd_run() {
-    local tag="$DEFAULT_DISTRO"
+    local tag="${DCONT_TAG:-$DEFAULT_DISTRO}"
     local mounts=()
     local networks=()
-    local context="default"
-    local shell="/bin/zsh"
-    local runtime=""
+    local context="${DCONT_CONTEXT:-default}"
+    local shell="${DCONT_SHELL:-/bin/zsh}"
+    local runtime="${DCONT_RUNTIME:-}"
     local gpu=false
+    case "${DCONT_GPU:-}" in
+        1|true|yes|on) gpu=true ;;
+    esac
+
+    # Pre-populate mounts/networks from env (newline-separated for multiple,
+    # plain string for a single value). Pairs nicely with zsh tied arrays:
+    #   typeset -T DCONT_MOUNT dcont_mount $'\n'
+    #   dcont_mount=(/path/a /path/b:/inside)
+    #   export DCONT_MOUNT
+    if [ -n "${DCONT_MOUNT:-}" ]; then
+        while IFS= read -r line; do
+            [ -n "$line" ] && mounts+=("$line")
+        done <<< "$DCONT_MOUNT"
+    fi
+    if [ -n "${DCONT_NETWORK:-}" ]; then
+        while IFS= read -r line; do
+            [ -n "$line" ] && networks+=("$line")
+        done <<< "$DCONT_NETWORK"
+    fi
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -170,9 +196,8 @@ cmd_run() {
         esac
     done
 
-    [ -n "$runtime" ] && CONTAINER_RUNTIME="$runtime"
     local rt
-    rt=$(detect_runtime)
+    rt=$(detect_runtime "$runtime")
     local image_name="${IMAGE_PREFIX}-${tag}"
 
     local aicont_dir="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
@@ -199,11 +224,9 @@ cmd_run() {
         run_args+=(--user "$(id -u):$(id -g)")
     fi
 
-    run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined)
-    [ "$rt" = "podman" ] && run_args+=(--security-opt label=disable)
+    run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined --security-opt label=disable)
 
-    run_args+=(-v "$ctx_dir/claude:/home/$host_user/.claude")
-    run_args+=(-v "$ctx_dir/codex:/home/$host_user/.codex")
+    run_args+=(-v "$ctx_dir:/home/$host_user/.aicontext")
 
     for network in "${networks[@]}"; do
         run_args+=(--network "$network")
@@ -255,9 +278,8 @@ cmd_list() {
         esac
     done
 
-    [ -n "$runtime" ] && CONTAINER_RUNTIME="$runtime"
     local rt
-    rt=$(detect_runtime)
+    rt=$(detect_runtime "$runtime")
 
     echo "Dotfiles container images:"
     echo
@@ -274,9 +296,8 @@ cmd_clean() {
         esac
     done
 
-    [ -n "$runtime" ] && CONTAINER_RUNTIME="$runtime"
     local rt
-    rt=$(detect_runtime)
+    rt=$(detect_runtime "$runtime")
 
     local images
     images=$("$rt" images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_PREFIX}" || true)
@@ -325,6 +346,16 @@ Run options:
   --shell <shell>          Override shell (default: /bin/zsh)
   --gpu                    Enable GPU passthrough (NVIDIA CDI)
   --runtime <podman|docker> Override runtime detection
+
+Run env vars (project pinning, e.g. via .env autoloaded by zsh):
+  DCONT_TAG       default --tag
+  DCONT_CONTEXT   default --context
+  DCONT_SHELL     default --shell
+  DCONT_RUNTIME   default --runtime
+  DCONT_GPU       enable --gpu when set to 1/true/yes/on
+  DCONT_MOUNT     mount(s); single string, or newline-separated for multiple.
+                  Additive with --mount on the command line.
+  DCONT_NETWORK   network(s); same format/semantics as DCONT_MOUNT.
 
 Examples:
   $0 build

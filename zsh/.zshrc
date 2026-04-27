@@ -56,5 +56,10 @@ if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
 
+# Container-only aliases (dcont / docker / podman)
+if [[ -f /.dockerenv || -f /run/.containerenv ]]; then
+  alias yclaude='claude --dangerously-skip-permissions'
+fi
+
 # Starship prompt
 eval "$(starship init zsh)"

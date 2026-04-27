@@ -181,7 +181,33 @@ dcont clean
 
 Zsh tab completion is provided for all subcommands and their flags.
 
-AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context gets its own subdirectory with separate `claude/` and `codex/` dirs mounted into the container.
+#### Project pinning via env vars
+
+`dcont run` reads its defaults from environment variables, so per-project settings can live in a `.env` file that zsh autoloads when you `cd` into the project:
+
+| Variable        | Equivalent flag | Notes                                                                 |
+| --------------- | --------------- | --------------------------------------------------------------------- |
+| `DCONT_TAG`     | `--tag`         |                                                                       |
+| `DCONT_CONTEXT` | `--context`     |                                                                       |
+| `DCONT_SHELL`   | `--shell`       |                                                                       |
+| `DCONT_RUNTIME` | `--runtime`     |                                                                       |
+| `DCONT_GPU`     | `--gpu`         | Truthy: `1`, `true`, `yes`, `on`                                      |
+| `DCONT_MOUNT`   | `--mount`       | Single string, or newline-separated for multiple. Additive with CLI.  |
+| `DCONT_NETWORK` | `--network`     | Same format and semantics as `DCONT_MOUNT`.                           |
+
+CLI flags override scalar env vars; for `--mount` / `--network`, command-line values are appended to whatever the env vars provide.
+
+For multiple mounts/networks, the cleanest zsh idiom is a tied array:
+
+```zsh
+typeset -T DCONT_MOUNT dcont_mount $'\n'
+dcont_mount=("$PWD" /data:/data)
+export DCONT_MOUNT DCONT_CONTEXT=my-project DCONT_NETWORK=myproject_default
+```
+
+A single mount is just `export DCONT_MOUNT=$PWD`.
+
+AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context directory is mounted in full at `~/.aicontext` inside the container; `~/.claude` and `~/.codex` are symlinks into that mount, so other LLM-related shared state (e.g. plugin repos) can live alongside them.
 
 A `Taskfile.yml` is also provided for [go-task](https://taskfile.dev/) users:
 
