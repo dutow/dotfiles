@@ -1,0 +1,3 @@
+---
+dcont_host_packages:
+  - python3-pipx

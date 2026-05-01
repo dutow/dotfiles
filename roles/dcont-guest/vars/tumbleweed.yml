@@ -1,0 +1,8 @@
+---
+dcont_guest_packages:
+  - nftables
+  - jq
+  - iproute2
+  - ca-certificates
+dcont_guest_ca_dir: /etc/pki/trust/anchors
+dcont_guest_ca_update_cmd: /usr/sbin/update-ca-certificates

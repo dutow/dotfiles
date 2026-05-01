@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# dcont-egress-init — install nft default-drop egress rules.
+# Runs as root via NOPASSWD sudoers from the entrypoint.
+#
+# Env vars (passed by dcont via container env):
+#   DCONT_AUDIT_MODE   strict|soft|off — only 'strict' installs rules
+#   DCONT_PROXY_HOST   gateway IP / hostname agent uses to reach proxy
+#   DCONT_PROXY_PORT   proxy port
+set -e
+set -o pipefail
+
+case "${DCONT_AUDIT_MODE:-off}" in
+    strict) ;;
+    soft|off) exit 0 ;;
+    *) echo "dcont-egress-init: unknown mode '${DCONT_AUDIT_MODE}'" >&2; exit 1 ;;
+esac
+
+# Refuse re-initialization. Once dcont's entrypoint installs the table,
+# no later invocation may replace it (defends against in-container attackers
+# who could otherwise re-run with crafted env vars to widen egress).
+if command -v nft >/dev/null 2>&1 && nft list table inet dcont_egress >/dev/null 2>&1; then
+    echo "dcont-egress-init: table already installed; refusing to re-init" >&2
+    exit 1
+fi
+
+: "${DCONT_PROXY_HOST:?DCONT_PROXY_HOST required in strict mode}"
+: "${DCONT_PROXY_PORT:?DCONT_PROXY_PORT required in strict mode}"
+
+# Validate inputs (defense against env-var injection into nft heredoc).
+case "$DCONT_PROXY_PORT" in
+    ''|*[!0-9]*)
+        echo "dcont-egress-init: DCONT_PROXY_PORT must be 1-65535 digits" >&2
+        exit 1 ;;
+esac
+if [ "$DCONT_PROXY_PORT" -lt 1 ] || [ "$DCONT_PROXY_PORT" -gt 65535 ]; then
+    echo "dcont-egress-init: DCONT_PROXY_PORT out of range" >&2
+    exit 1
+fi
+case "$DCONT_PROXY_HOST" in
+    *[!a-zA-Z0-9.-]*)
+        echo "dcont-egress-init: DCONT_PROXY_HOST contains invalid characters" >&2
+        exit 1 ;;
+esac
+
+if ! command -v nft >/dev/null 2>&1; then
+    echo "dcont-egress-init: nft not installed in image" >&2
+    exit 1
+fi
+
+# Resolve gateway (proxy host) to IP.
+gw_ip="$(getent ahostsv4 "$DCONT_PROXY_HOST" | awk 'NR==1 {print $1}')"
+if [ -z "$gw_ip" ]; then
+    echo "dcont-egress-init: cannot resolve $DCONT_PROXY_HOST" >&2
+    exit 1
+fi
+
+# Collect subnets of every non-loopback interface.
+subnets_v4=()
+subnets_v6=()
+while IFS=$'\t' read -r family addr; do
+    case "$family" in
+        inet)  subnets_v4+=("$addr") ;;
+        inet6) subnets_v6+=("$addr") ;;
+    esac
+done < <(ip -j addr | jq -r '
+    .[]
+    | select(.ifname != "lo")
+    | .addr_info[]
+    | select(.family == "inet" or (.family == "inet6" and .scope == "global"))
+    | "\(.family)\t\(.local)/\(.prefixlen)"
+')
+
+# Build subnet rules — only allow private ranges. Public-routable interfaces
+# (macvlan, host networking) would otherwise let agents reach the internet
+# without going through the proxy.
+v4_rules=""
+for s in "${subnets_v4[@]}"; do
+    case "$s" in
+        10.*|172.1[6-9].*|172.2[0-9].*|172.3[01].*|192.168.*|169.254.*|127.*)
+            v4_rules="${v4_rules}    ip daddr ${s} accept"$'\n' ;;
+        *)
+            echo "dcont-egress-init: skipping non-private v4 subnet $s" >&2 ;;
+    esac
+done
+v6_rules=""
+for s in "${subnets_v6[@]}"; do
+    case "$s" in
+        fc*|fd*|fe80:*|::1*)
+            v6_rules="${v6_rules}    ip6 daddr ${s} accept"$'\n' ;;
+        *)
+            echo "dcont-egress-init: skipping non-private v6 subnet $s" >&2 ;;
+    esac
+done
+
+nft -f - <<EOF
+table inet dcont_egress {
+  chain output {
+    type filter hook output priority 0; policy drop;
+    oifname "lo" accept
+    ct state established,related accept
+    ip daddr ${gw_ip} tcp dport ${DCONT_PROXY_PORT} accept
+    ip daddr ${gw_ip} drop
+${v4_rules}${v6_rules}  }
+}
+EOF
+
+echo "dcont-egress-init: nft rules installed (gw=${gw_ip}:${DCONT_PROXY_PORT}, subnets v4=${#subnets_v4[@]} v6=${#subnets_v6[@]})" >&2

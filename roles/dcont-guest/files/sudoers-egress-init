@@ -1,0 +1,4 @@
+# Allow any user to run only the egress-init script without password.
+# This script is root-owned and writes nft rules. It refuses to do anything
+# in soft/off modes.
+ALL ALL=(root) NOPASSWD: /usr/local/sbin/dcont-egress-init

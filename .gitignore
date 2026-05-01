@@ -3,3 +3,6 @@
 /vim
 /zsh/.zsh_plugins.zsh
 /.container_sudo_password
+.mitmproxy-ca-cert.pem
+__pycache__/
+*.pyc

@@ -220,6 +220,35 @@ task container:list
 task container:clean
 ```
 
+## Container egress audit
+
+Every `dcont run` defaults to **strict audit mode**: agent HTTPS traffic is
+routed through a per-invocation `mitmproxy` on the host, and an in-container
+`nft` firewall blocks everything except the proxy port and joined container
+networks.
+
+Logs are written to `~/.aicont-logs/<context>/<run-timestamp>/`:
+- `flows.mitm` — full request/response (binary, replay with `mitmweb -r`)
+- `summary.jsonl` — one line per request
+- `secrets.jsonl` — flagged credential leaks (preview-masked)
+- `blocked.jsonl` — domains blocked by the malicious-URL list
+
+Modes (`--audit=` flag or `DCONT_AUDIT=` env var):
+- `strict` (default) — proxy + firewall
+- `soft` — proxy only, no firewall (tools that ignore HTTPS_PROXY bypass)
+- `off` — no audit, no firewall (legacy behavior)
+
+Compose-network peer traffic (any port, any protocol) bypasses the proxy
+when joined via `--network`.
+
+The optional malicious-URL blocklist is loaded from
+`~/.config/dcont/blocklist.txt` if present (hosts file format).
+
+### CA cert
+
+`mitmproxy`'s CA is baked into the image at build time. If you rotate the CA
+(`rm -rf ~/.mitmproxy && mitmdump --version`), rebuild images with `dcont build`.
+
 ## Git submodules
 
 - `dotbot/` — [Dotbot](https://github.com/anishathalye/dotbot) symlink manager

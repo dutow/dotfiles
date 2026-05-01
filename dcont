@@ -19,6 +19,40 @@ detect_runtime() {
     fi
 }
 
+pick_free_port() {
+    python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()'
+}
+
+start_mitmproxy() {
+    local log_dir="$1"
+    local port="$2"
+    local blocklist="${3:-}"
+    DCONT_AUDIT_LOG_DIR="$log_dir" \
+    DCONT_AUDIT_PORT="$port" \
+    DCONT_AUDIT_BLOCKLIST="$blocklist" \
+    nohup "$HOME/.local/bin/dcont-mitmproxy" >/dev/null 2>&1 &
+    echo $!
+}
+
+wait_for_proxy_ready() {
+    local port="$1"
+    local pid="$2"
+    local i=0
+    while [ $i -lt 50 ]; do
+        if ! kill -0 "$pid" 2>/dev/null; then
+            echo "ERROR: mitmproxy died during startup. Check $DCONT_AUDIT_LOG_DIR/proxy.log" >&2
+            return 1
+        fi
+        if ss -lnt 2>/dev/null | awk '{print $4}' | grep -q ":$port\$"; then
+            return 0
+        fi
+        sleep 0.1
+        i=$((i + 1))
+    done
+    echo "ERROR: mitmproxy did not bind port $port within 5s" >&2
+    return 1
+}
+
 declare -A DISTRO_IMAGES=(
     [ubuntu-24.04]="ubuntu:24.04"
     [ubuntu-22.04]="ubuntu:22.04"
@@ -88,7 +122,18 @@ cmd_build() {
     local host_gid
     host_gid=$(id -g)
 
-    trap "$rt rm -f $build_container &>/dev/null || true" EXIT
+    local ca_src="$HOME/.mitmproxy/mitmproxy-ca-cert.pem"
+    local ca_staged="$BASEDIR/.mitmproxy-ca-cert.pem"
+    if [ -f "$ca_src" ]; then
+        cp "$ca_src" "$ca_staged"
+        echo "==> Staged mitmproxy CA for image build"
+    else
+        echo "WARNING: $ca_src not found. Image will not have mitmproxy CA trust."
+        echo "         Run: mitmdump --version  (to seed)  then re-run dcont build."
+        rm -f "$ca_staged"
+    fi
+
+    trap "$rt rm -f $build_container &>/dev/null || true; rm -f \"$ca_staged\"" EXIT
 
     echo "Building image: $image_name"
     echo "  Distro:  $distro ($base_image)"
@@ -147,6 +192,7 @@ cmd_build() {
         --change "ENV CLAUDE_CONFIG_DIR=/home/$host_user/.claude" \
         --change "ENV LANG=en_US.UTF-8" \
         --change "ENV DEBUGINFOD_URLS=https://debuginfod.opensuse.org/" \
+        --change 'ENTRYPOINT ["/usr/local/sbin/dcont-entrypoint"]' \
         --change 'CMD ["/bin/zsh"]' \
         "$build_container" "$image_name"
 
@@ -166,6 +212,8 @@ cmd_run() {
     case "${DCONT_GPU:-}" in
         1|true|yes|on) gpu=true ;;
     esac
+    local audit_mode="${DCONT_AUDIT:-strict}"
+    local extra_cmd=()
 
     # Pre-populate mounts/networks from env (newline-separated for multiple,
     # plain string for a single value). Pairs nicely with zsh tied arrays:
@@ -192,9 +240,26 @@ cmd_run() {
             --shell)   shell="$2"; shift 2 ;;
             --runtime) runtime="$2"; shift 2 ;;
             --gpu)     gpu=true; shift ;;
+            --audit=*) audit_mode="${1#--audit=}"; shift ;;
+            --audit)   audit_mode="$2"; shift 2 ;;
+            --) shift; extra_cmd=("$@"); break ;;
             *) echo "Unknown run option: $1" >&2; exit 1 ;;
         esac
     done
+
+    case "$audit_mode" in
+        strict|soft|off) ;;
+        *) echo "ERROR: --audit must be strict, soft, or off (got: $audit_mode)" >&2; exit 1 ;;
+    esac
+
+    if [ "$audit_mode" = "strict" ]; then
+        for n in "${networks[@]}"; do
+            if [ "$n" = "host" ]; then
+                echo "ERROR: --audit=strict is incompatible with --network host" >&2
+                exit 1
+            fi
+        done
+    fi
 
     local rt
     rt=$(detect_runtime "$runtime")
@@ -216,7 +281,10 @@ cmd_run() {
     local host_user
     host_user=$(id -un)
 
-    local run_args=(run --rm -it)
+    local run_args=(run --rm)
+    if [ -t 0 ] && [ -t 1 ]; then
+        run_args+=(-it)
+    fi
 
     if [ "$rt" = "podman" ]; then
         run_args+=(--userns=keep-id)
@@ -227,6 +295,48 @@ cmd_run() {
     run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined --security-opt label=disable)
 
     run_args+=(-v "$ctx_dir:/home/$host_user/.aicontext")
+
+    local audit_log_dir=""
+    local audit_port=""
+    local audit_pid=""
+    local audit_proxy_host=""
+    if [ "$audit_mode" != "off" ]; then
+        local ts
+        ts="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+        audit_log_dir="$HOME/.aicont-logs/$context/$ts"
+        mkdir -p "$audit_log_dir"
+        ln -sfn "$ts" "$HOME/.aicont-logs/$context/latest"
+
+        audit_port="$(pick_free_port)"
+        local blocklist=""
+        [ -f "$HOME/.config/dcont/blocklist.txt" ] && blocklist="$HOME/.config/dcont/blocklist.txt"
+        # Export DCONT_AUDIT_LOG_DIR so wait_for_proxy_ready can reference it
+        # in error messages if mitmproxy dies during startup.
+        export DCONT_AUDIT_LOG_DIR="$audit_log_dir"
+        audit_pid="$(start_mitmproxy "$audit_log_dir" "$audit_port" "$blocklist")"
+        if ! wait_for_proxy_ready "$audit_port" "$audit_pid"; then
+            kill "$audit_pid" 2>/dev/null || true
+            exit 1
+        fi
+        trap "kill $audit_pid 2>/dev/null || true" EXIT
+
+        if [ "$rt" = "podman" ]; then
+            audit_proxy_host="host.containers.internal"
+        else
+            audit_proxy_host="host.docker.internal"
+            run_args+=(--add-host=host.docker.internal:host-gateway)
+        fi
+        run_args+=(
+            --cap-add=NET_ADMIN
+            -e "DCONT_AUDIT_MODE=$audit_mode"
+            -e "DCONT_PROXY_HOST=$audit_proxy_host"
+            -e "DCONT_PROXY_PORT=$audit_port"
+            -e "HTTPS_PROXY=http://${audit_proxy_host}:${audit_port}"
+            -e "HTTP_PROXY=http://${audit_proxy_host}:${audit_port}"
+            -e "NO_PROXY=localhost,127.0.0.1,::1"
+        )
+        echo "==> Audit mode: $audit_mode (port $audit_port, log $audit_log_dir)"
+    fi
 
     for network in "${networks[@]}"; do
         run_args+=(--network "$network")
@@ -264,6 +374,9 @@ cmd_run() {
     done
 
     run_args+=("$image_name" "$shell")
+    if [ ${#extra_cmd[@]} -gt 0 ]; then
+        run_args+=("${extra_cmd[@]}")
+    fi
 
     echo "Running: $rt ${run_args[*]}"
     "$rt" "${run_args[@]}"
@@ -345,6 +458,7 @@ Run options:
   --context <name>         AI config context name (default: default)
   --shell <shell>          Override shell (default: /bin/zsh)
   --gpu                    Enable GPU passthrough (NVIDIA CDI)
+  --audit <mode>           strict|soft|off (default: strict, env: DCONT_AUDIT)
   --runtime <podman|docker> Override runtime detection
 
 Run env vars (project pinning, e.g. via .env autoloaded by zsh):
@@ -353,6 +467,7 @@ Run env vars (project pinning, e.g. via .env autoloaded by zsh):
   DCONT_SHELL     default --shell
   DCONT_RUNTIME   default --runtime
   DCONT_GPU       enable --gpu when set to 1/true/yes/on
+  DCONT_AUDIT     audit mode override (default: strict)
   DCONT_MOUNT     mount(s); single string, or newline-separated for multiple.
                   Additive with --mount on the command line.
   DCONT_NETWORK   network(s); same format/semantics as DCONT_MOUNT.

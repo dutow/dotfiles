@@ -1,0 +1,74 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install dcont-guest packages
+  ansible.builtin.package:
+    name: "{{ dcont_guest_packages }}"
+    state: present
+  become: true
+
+- name: Install dcont-egress-init script
+  ansible.builtin.copy:
+    src: "{{ dotfiles_dir }}/containers/audit/dcont-egress-init"
+    dest: /usr/local/sbin/dcont-egress-init
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Install dcont-entrypoint script
+  ansible.builtin.copy:
+    src: "{{ dotfiles_dir }}/containers/audit/dcont-entrypoint"
+    dest: /usr/local/sbin/dcont-entrypoint
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Install sudoers rule for egress-init
+  ansible.builtin.copy:
+    src: sudoers-egress-init
+    # zz-prefix ensures this is parsed AFTER user-specific files (e.g.
+    # /etc/sudoers.d/<host_user>) so its NOPASSWD rule isn't overridden
+    # by a later, more general rule that requires a password.
+    dest: /etc/sudoers.d/zz-dcont-egress
+    owner: root
+    group: root
+    mode: "0440"
+    validate: visudo -cf %s
+  become: true
+
+- name: Check whether mitmproxy CA is staged in build
+  ansible.builtin.stat:
+    path: "{{ dotfiles_dir }}/.mitmproxy-ca-cert.pem"
+  register: ca_staged
+
+- name: Install mitmproxy CA into trust store
+  when: ca_staged.stat.exists
+  block:
+    - name: Ensure trust anchor dir exists
+      ansible.builtin.file:
+        path: "{{ dcont_guest_ca_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      become: true
+    - name: Copy CA to trust dir
+      ansible.builtin.copy:
+        src: "{{ dotfiles_dir }}/.mitmproxy-ca-cert.pem"
+        dest: "{{ dcont_guest_ca_dir }}/dcont-mitmproxy-ca.crt"
+        owner: root
+        group: root
+        mode: "0644"
+      become: true
+    - name: Refresh trust store
+      ansible.builtin.command: "{{ dcont_guest_ca_update_cmd }}"
+      become: true
+      changed_when: true
+
+- name: Warn when CA not staged
+  ansible.builtin.debug:
+    msg: "WARNING: mitmproxy CA not staged at {{ dotfiles_dir }}/.mitmproxy-ca-cert.pem; image will not work in --audit=strict|soft mode. Re-build after installing dcont-host."
+  when: not ca_staged.stat.exists

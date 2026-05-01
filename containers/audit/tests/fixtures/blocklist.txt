@@ -1,0 +1,4 @@
+# comment
+0.0.0.0 evil.example.com
+0.0.0.0 phishing.test
+127.0.0.1 malware.example

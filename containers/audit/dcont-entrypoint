@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# dcont-entrypoint — image ENTRYPOINT; runs egress init then execs CMD.
+set -e
+
+case "${DCONT_AUDIT_MODE:-off}" in
+    strict) sudo /usr/local/sbin/dcont-egress-init ;;
+esac
+
+if [ $# -eq 0 ]; then
+    exec /bin/zsh
+fi
+exec "$@"

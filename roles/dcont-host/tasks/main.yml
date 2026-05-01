@@ -1,0 +1,47 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install dcont-host system packages
+  ansible.builtin.package:
+    name: "{{ dcont_host_packages }}"
+    state: present
+  become: true
+
+- name: Ensure pipx is installed (Oracle, via pip)
+  ansible.builtin.command: python3 -m pip install --user pipx
+  when: dotfiles_distro == 'oracle'
+  changed_when: false
+
+- name: Ensure ~/.local/bin in PATH for pipx
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/pipx ensurepath"
+  args:
+    creates: "{{ dotfiles_home }}/.local/share/pipx"
+  when: dotfiles_distro == 'oracle'
+
+- name: Check if mitmproxy is installed via pipx
+  ansible.builtin.command: pipx list --short
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
+  register: pipx_list
+  changed_when: false
+  failed_when: false
+
+- name: Install mitmproxy via pipx
+  ansible.builtin.command: pipx install mitmproxy
+  environment:
+    PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
+  when: "'mitmproxy' not in pipx_list.stdout"
+
+- name: Ensure ~/.local/bin/dcont-mitmproxy symlink
+  ansible.builtin.file:
+    src: "{{ dotfiles_dir }}/containers/audit/dcont-mitmproxy"
+    dest: "{{ dotfiles_home }}/.local/bin/dcont-mitmproxy"
+    state: link
+    force: true
+
+- name: Seed mitmproxy CA (one-shot, briefly starts mitmdump to generate ~/.mitmproxy/)
+  ansible.builtin.shell: timeout 2 mitmdump --listen-port 0 || true
+  args:
+    creates: "{{ dotfiles_home }}/.mitmproxy/mitmproxy-ca-cert.pem"
+  changed_when: false

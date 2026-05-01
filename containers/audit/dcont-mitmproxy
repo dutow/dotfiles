@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# dcont-mitmproxy — start mitmdump with dcont audit addons.
+#
+# Env vars:
+#   DCONT_AUDIT_LOG_DIR   required, target dir for flows.mitm + jsonl files
+#   DCONT_AUDIT_PORT      required, port mitmproxy listens on
+#   DCONT_AUDIT_BLOCKLIST optional, path to hosts-format blocklist
+#
+# Each invocation must use a distinct DCONT_AUDIT_LOG_DIR; the loader script
+# is created via mktemp inside that dir.
+set -e
+
+: "${DCONT_AUDIT_LOG_DIR:?must be set}"
+: "${DCONT_AUDIT_PORT:?must be set}"
+
+ADDON_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)/addons"
+
+mkdir -p "$DCONT_AUDIT_LOG_DIR"
+
+LOADER="$(mktemp --tmpdir="$DCONT_AUDIT_LOG_DIR" loader.XXXXXX.py)"
+trap 'rm -f "$LOADER"' EXIT
+PROJECT_DIR="$(dirname "$ADDON_DIR")"
+cat > "$LOADER" <<EOF
+import os
+import sys
+from pathlib import Path
+
+# Loader lives in the per-run log dir, but the addons package lives next
+# to dcont-mitmproxy. Inject that path so 'from addons.X import ...' works.
+sys.path.insert(0, "$PROJECT_DIR")
+
+from addons.secrets import SecretsAddon
+from addons.malicious_urls import MaliciousUrlsAddon
+from addons.flow_logger import FlowLoggerAddon
+
+LOG_DIR = Path(os.environ["DCONT_AUDIT_LOG_DIR"])
+BLOCKLIST = os.environ.get("DCONT_AUDIT_BLOCKLIST", "")
+
+addons = [
+    SecretsAddon(LOG_DIR / "secrets.jsonl"),
+    FlowLoggerAddon(LOG_DIR / "summary.jsonl"),
+]
+if BLOCKLIST:
+    addons.append(MaliciousUrlsAddon(Path(BLOCKLIST), LOG_DIR / "blocked.jsonl"))
+EOF
+
+exec mitmdump \
+    --listen-port "$DCONT_AUDIT_PORT" \
+    --set save_stream_file="$DCONT_AUDIT_LOG_DIR/flows.mitm" \
+    --set termlog_verbosity=warn \
+    --set flow_detail=0 \
+    -s "$LOADER" \
+    > "$DCONT_AUDIT_LOG_DIR/proxy.log" 2>&1

@@ -55,6 +55,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --container)
             CONTAINER_MODE=true
+            EXTRA_VARS+=("dotfiles_container_mode=true")
             shift
             ;;
         --disable-yubikey)

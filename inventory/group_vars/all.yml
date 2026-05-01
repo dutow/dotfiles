@@ -9,3 +9,5 @@ distro_key_map:
   Ubuntu: ubuntu
   openSUSE Tumbleweed: tumbleweed
   OracleLinux: oracle
+
+dotfiles_container_mode: false
