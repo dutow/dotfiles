@@ -2,6 +2,30 @@
 - name: Load distro-specific package names
   ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
 
+- name: Add GitHub CLI signing key (Ubuntu)
+  ansible.builtin.apt_key:
+    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    keyring: /usr/share/keyrings/githubcli-archive-keyring.gpg
+    state: present
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add GitHub CLI apt repository (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+    state: present
+    filename: github-cli
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add GitHub CLI dnf repository (Oracle)
+  ansible.builtin.get_url:
+    url: https://cli.github.com/packages/rpm/gh-cli.repo
+    dest: /etc/yum.repos.d/gh-cli.repo
+    mode: '0644'
+  become: true
+  when: dotfiles_distro == 'oracle'
+
 - name: Install git tools
   ansible.builtin.package:
     name: "{{ git_tools_packages }}"
