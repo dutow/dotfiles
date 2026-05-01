@@ -2,10 +2,19 @@
 - name: Load distro-specific package names
   ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
 
-- name: Add neovim PPA (Ubuntu)
+- name: Add neovim PPA signing key (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x9DBB0BE9366964F134855E2255F96FCF8231B6DD"
+    dest: /usr/share/keyrings/neovim-ppa.asc
+    mode: '0644'
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add neovim PPA repository (Ubuntu)
   ansible.builtin.apt_repository:
-    repo: ppa:neovim-ppa/unstable
+    repo: "deb [signed-by=/usr/share/keyrings/neovim-ppa.asc] https://ppa.launchpadcontent.net/neovim-ppa/unstable/ubuntu {{ ansible_distribution_release | lower }} main"
     state: present
+    filename: neovim-ppa
   become: true
   when: dotfiles_distro == 'ubuntu'
 
