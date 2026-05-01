@@ -12,6 +12,13 @@
     state: present
   become: true
 
+- name: Create systemd user directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts.env.HOME }}/.config/systemd/user"
+    state: directory
+    mode: "0755"
+  when: ansible_facts.service_mgr == 'systemd'
+
 - name: Install podman-cleanup timer service
   ansible.builtin.copy:
     dest: "{{ ansible_facts.env.HOME }}/.config/systemd/user/podman-cleanup.service"
@@ -23,6 +30,7 @@
       [Service]
       Type=oneshot
       ExecStart=/usr/bin/podman system prune --all --force
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Install podman-cleanup timer
   ansible.builtin.copy:
@@ -38,6 +46,7 @@
 
       [Install]
       WantedBy=timers.target
+  when: ansible_facts.service_mgr == 'systemd'
 
 - name: Enable podman-cleanup timer
   ansible.builtin.systemd:
@@ -46,3 +55,4 @@
     daemon_reload: true
     enabled: true
     state: started
+  when: ansible_facts.service_mgr == 'systemd'
