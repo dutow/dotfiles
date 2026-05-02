@@ -25,3 +25,6 @@ desktop_packages:
   - libfido2-udev
   - pam_u2f
   - yubikey-manager
+  - android-tools
+  - scrcpy
+  - qemu-kvm

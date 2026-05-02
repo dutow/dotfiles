@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# dotfiles-android-init — idempotent Android SDK + NDK bootstrap.
+# Reads ANDROID_HOME from env (defaults to ~/.aicontext/persist/android/sdk so
+# the SDK lives in the per-context persist dir under dcont). Safe to re-run;
+# skips work that's already done.
+set -euo pipefail
+
+ANDROID_HOME="${ANDROID_HOME:-$HOME/.aicontext/persist/android/sdk}"
+ANDROID_USER_HOME="${ANDROID_USER_HOME:-$HOME/.aicontext/persist/android/user}"
+GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.aicontext/persist/android/gradle}"
+
+CMDLINE_TOOLS_VERSION="11076708"
+SDK_PLATFORM="platforms;android-35"
+SDK_BUILD_TOOLS="build-tools;35.0.0"
+SDK_NDK="ndk;27.2.12479018"
+
+mkdir -p "$ANDROID_HOME" "$ANDROID_USER_HOME" "$GRADLE_USER_HOME"
+
+cmdline_root="$ANDROID_HOME/cmdline-tools/latest"
+sdkmanager="$cmdline_root/bin/sdkmanager"
+
+if [ ! -x "$sdkmanager" ]; then
+    echo "[android-init] downloading commandlinetools $CMDLINE_TOOLS_VERSION"
+    tmp="$(mktemp -d)"
+    trap 'rm -rf "$tmp"' EXIT
+    curl -fsSL -o "$tmp/clt.zip" \
+        "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_VERSION}_latest.zip"
+    unzip -q "$tmp/clt.zip" -d "$tmp"
+    mkdir -p "$ANDROID_HOME/cmdline-tools"
+    rm -rf "$cmdline_root"
+    mv "$tmp/cmdline-tools" "$cmdline_root"
+fi
+
+export ANDROID_HOME ANDROID_SDK_ROOT="$ANDROID_HOME" ANDROID_USER_HOME
+
+# JVM proxy routing (JAVA_TOOL_OPTIONS) is set by the dcont entrypoint
+# whenever HTTPS_PROXY is present, so sdkmanager picks it up automatically.
+
+# Each component is its own dir under $ANDROID_HOME — checking for the dir
+# is a fast no-op when already installed.
+needed=()
+[ -d "$ANDROID_HOME/platform-tools" ] || needed+=("platform-tools")
+[ -d "$ANDROID_HOME/${SDK_PLATFORM/;//}" ] || needed+=("$SDK_PLATFORM")
+[ -d "$ANDROID_HOME/${SDK_BUILD_TOOLS/;//}" ] || needed+=("$SDK_BUILD_TOOLS")
+[ -d "$ANDROID_HOME/${SDK_NDK/;//}" ] || needed+=("$SDK_NDK")
+
+if [ ${#needed[@]} -eq 0 ]; then
+    echo "[android-init] SDK already populated at $ANDROID_HOME"
+    exit 0
+fi
+
+# `yes |` would trip set -o pipefail (yes gets SIGPIPE when sdkmanager
+# closes stdin) — process substitution sidesteps the pipeline and lets
+# real failures still propagate.
+echo "[android-init] accepting licenses"
+"$sdkmanager" --licenses < <(yes) >/dev/null
+
+echo "[android-init] installing: ${needed[*]}"
+"$sdkmanager" --install "${needed[@]}"
+
+echo "[android-init] done. ANDROID_HOME=$ANDROID_HOME"

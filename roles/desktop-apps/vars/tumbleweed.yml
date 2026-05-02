@@ -17,3 +17,4 @@ desktop_apps_flatpaks:
   - com.slack.Slack
   - com.discordapp.Discord
   - com.dropbox.Client
+  - com.google.AndroidStudio

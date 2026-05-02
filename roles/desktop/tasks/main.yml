@@ -12,6 +12,13 @@
     state: present
   become: true
 
+- name: Ensure user is in kvm group (Android emulator + other KVM workloads)
+  ansible.builtin.user:
+    name: "{{ dotfiles_user }}"
+    groups: kvm
+    append: true
+  become: true
+
 - name: Switch multimedia packages to Packman vendor
   ansible.builtin.command:
     cmd: zypper --non-interactive dist-upgrade --from packman --allow-vendor-change

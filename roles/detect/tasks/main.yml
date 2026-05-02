@@ -32,6 +32,7 @@
       - node-dev
       - python-dev
       - selenium
+      - android-dev
       - ai-tools
       - kubernetes
   when:

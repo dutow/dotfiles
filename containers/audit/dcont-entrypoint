@@ -13,6 +13,16 @@ export PATH="$AICONT_PERSIST/bin:$AICONT_PERSIST/npm/bin:$AICONT_PERSIST/python/
 export NPM_CONFIG_PREFIX="$AICONT_PERSIST/npm"
 export PYTHONUSERBASE="$AICONT_PERSIST/python"
 
+# JVM tools (sdkmanager, gradle, maven, kotlinc, …) ignore HTTPS_PROXY
+# and only honor -Dhttps.proxyHost/Port via JAVA_TOOL_OPTIONS. Mirror the
+# audit proxy into the JVM so Java apps route through it too.
+if [ -n "${HTTPS_PROXY:-}" ]; then
+    proxy_hp="${HTTPS_PROXY#*://}"; proxy_hp="${proxy_hp%/}"
+    proxy_host="${proxy_hp%%:*}"
+    proxy_port="${proxy_hp##*:}"
+    export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-Dhttps.proxyHost=$proxy_host -Dhttps.proxyPort=$proxy_port -Dhttp.proxyHost=$proxy_host -Dhttp.proxyPort=$proxy_port -Dhttp.nonProxyHosts=localhost|127.0.0.1"
+fi
+
 if [ -x "$HOME/.aicontext/init.sh" ]; then
     "$HOME/.aicontext/init.sh" 2>&1 | tee "$HOME/.aicontext/init.log"
     rc=${PIPESTATUS[0]}

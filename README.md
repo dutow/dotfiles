@@ -64,6 +64,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `node-dev`   | Node.js (LTS) via mise                                   |
 | `python-dev` | Python via mise, python3-dev headers                     |
 | `selenium`   | Firefox for headless browser automation                       |
+| `android-dev`| JDK 21, Android SDK/NDK bootstrap helper, kotlin-language-server |
 | `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
 | `kubernetes` | Docker, minikube, kubectl, helm, k3d                      |
 
@@ -85,6 +86,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js (LTS) via mise                            |
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
 | `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox for headless browser automation              |
+| `android-dev`   | android-dev    | `'android-dev' in dotfiles_sets` | JDK + Android SDK/NDK bootstrap (lives in aicontext persist) |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
 | `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | Docker, minikube, kubectl, helm, k3d                 |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
@@ -95,9 +97,13 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 
 ### Desktop apps (Tumbleweed)
 
-Native packages (zypper): Firefox, Thunderbird, KeePassXC, VS Code, podman
+Native packages (zypper): Firefox, Thunderbird, KeePassXC, VS Code, podman, scrcpy, android-tools, qemu-kvm
 
-Flatpak (via Flathub): Slack, Steam, Discord, Dropbox
+Flatpak (via Flathub): Slack, Discord, Dropbox, Android Studio
+
+The desktop role also adds the local user to the `kvm` group so the Android
+emulator (and other KVM workloads) can use `/dev/kvm`. Re-login required
+after first install.
 
 ### NVIDIA drivers
 
@@ -248,6 +254,34 @@ command -v caveman >/dev/null || \
     curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash
 ```
 
+#### Android SDK/NDK in containers
+
+Images built with the `android-dev` set ship a JDK plus the
+`dotfiles-android-init` helper. The helper downloads `commandlinetools` and
+runs `sdkmanager` to install platform-tools, `platforms;android-35`,
+`build-tools;35.0.0`, and `ndk;27.2.12479018` — all under
+`~/.aicontext/persist/android/` so the SDK is per-context and persists
+across container rebuilds (and never touches the host).
+
+Bootstrap once per context, either by running `dotfiles-android-init`
+manually after first `dcont run`, or by adding it to that context's
+`init.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -e
+command -v sdkmanager >/dev/null && [ -d "$ANDROID_HOME/platform-tools" ] \
+    || dotfiles-android-init
+```
+
+Re-running is a fast no-op once the SDK is populated. The `ANDROID_HOME`,
+`ANDROID_SDK_ROOT`, `ANDROID_USER_HOME`, `GRADLE_USER_HOME`, and `JAVA_HOME`
+env vars are set automatically inside containers by the shell init.
+
+Under `--audit=strict|soft`, the role imports the staged mitmproxy CA into
+the JDK's truststore at image-build time so `sdkmanager` can validate
+HTTPS through the proxy.
+
 A `Taskfile.yml` is also provided for [go-task](https://taskfile.dev/) users:
 
 ```bash
@@ -279,6 +313,11 @@ Modes (`--audit=` flag or `DCONT_AUDIT=` env var):
 
 Compose-network peer traffic (any port, any protocol) bypasses the proxy
 when joined via `--network`.
+
+JVM tools (`sdkmanager`, `gradle`, `mvn`, `kotlinc`, …) ignore
+`HTTPS_PROXY`, so the entrypoint also exports `JAVA_TOOL_OPTIONS` with
+the matching `-Dhttps.proxyHost`/`Port` flags whenever `HTTPS_PROXY` is
+set — every JVM launched in the container picks this up automatically.
 
 The optional malicious-URL blocklist is loaded from
 `~/.config/dcont/blocklist.txt` if present (hosts file format).

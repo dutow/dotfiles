@@ -1,0 +1,5 @@
+---
+android_dev_packages:
+  - java-21-openjdk-devel
+  - unzip
+  - curl

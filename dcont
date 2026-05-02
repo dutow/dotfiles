@@ -69,7 +69,7 @@ declare -A DISTRO_BOOTSTRAP=(
     [oracle-8]="dnf install -y python3 python3-pip ansible-core git sudo hostname glibc-langpack-en"
 )
 
-ALL_SETS="cpp-dev,ruby-dev,node-dev,python-dev,selenium,ai-tools"
+ALL_SETS="cpp-dev,ruby-dev,node-dev,python-dev,selenium,android-dev,ai-tools"
 DEFAULT_DISTRO="tumbleweed"
 IMAGE_PREFIX="dotfiles"
 

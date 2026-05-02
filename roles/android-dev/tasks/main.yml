@@ -1,0 +1,76 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Android development packages (JDK + tooling)
+  ansible.builtin.package:
+    name: "{{ android_dev_packages }}"
+    state: present
+  become: true
+
+- name: Install dotfiles-android-init helper
+  ansible.builtin.copy:
+    src: dotfiles-android-init
+    dest: /usr/local/bin/dotfiles-android-init
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Check whether mitmproxy CA is staged
+  ansible.builtin.stat:
+    path: "{{ dotfiles_dir }}/.mitmproxy-ca-cert.pem"
+  register: android_ca_staged
+
+- name: Import mitmproxy CA into Java truststore
+  # sdkmanager validates HTTPS with the JDK's own cacerts, not the system
+  # trust store — without this, downloads fail under dcont --audit=strict|soft.
+  ansible.builtin.command:
+    cmd: >-
+      keytool -importcert -noprompt -trustcacerts -storepass changeit
+      -alias dcont-mitmproxy
+      -file {{ dotfiles_dir }}/.mitmproxy-ca-cert.pem
+      -cacerts
+  become: true
+  register: android_ca_import
+  changed_when: "'already exists' not in android_ca_import.stderr"
+  failed_when:
+    - android_ca_import.rc != 0
+    - "'already exists' not in android_ca_import.stderr"
+  when: android_ca_staged.stat.exists
+
+- name: Check whether kotlin-language-server is installed
+  ansible.builtin.stat:
+    path: /opt/kotlin-language-server/bin/kotlin-language-server
+  register: kls_installed
+
+- name: Install kotlin-language-server
+  when: not kls_installed.stat.exists
+  block:
+    - name: Download kotlin-language-server release
+      ansible.builtin.get_url:
+        url: "https://github.com/fwcd/kotlin-language-server/releases/download/{{ kotlin_lsp_version }}/server.zip"
+        dest: "/tmp/kotlin-language-server-{{ kotlin_lsp_version }}.zip"
+        mode: "0644"
+      become: true
+
+    - name: Extract kotlin-language-server
+      ansible.builtin.unarchive:
+        src: "/tmp/kotlin-language-server-{{ kotlin_lsp_version }}.zip"
+        dest: /opt
+        remote_src: true
+        creates: /opt/server
+      become: true
+
+    - name: Move kotlin-language-server into place
+      ansible.builtin.command:
+        cmd: mv /opt/server /opt/kotlin-language-server
+        creates: /opt/kotlin-language-server
+      become: true
+
+    - name: Symlink kotlin-language-server onto PATH
+      ansible.builtin.file:
+        src: /opt/kotlin-language-server/bin/kotlin-language-server
+        dest: /usr/local/bin/kotlin-language-server
+        state: link
+      become: true

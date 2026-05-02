@@ -59,6 +59,17 @@ fi
 # Container-only aliases (dcont / docker / podman)
 if [[ -f /.dockerenv || -f /run/.containerenv ]]; then
   alias yclaude='claude --dangerously-skip-permissions'
+
+  # Android SDK / Gradle live in the per-context persist dir so they
+  # survive container rebuilds without leaking onto the host.
+  export ANDROID_HOME="$HOME/.aicontext/persist/android/sdk"
+  export ANDROID_SDK_ROOT="$ANDROID_HOME"
+  export ANDROID_USER_HOME="$HOME/.aicontext/persist/android/user"
+  export GRADLE_USER_HOME="$HOME/.aicontext/persist/android/gradle"
+  path=("$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/platform-tools" $path)
+  if [[ -z "${JAVA_HOME:-}" ]] && command -v java &>/dev/null; then
+    export JAVA_HOME="${$(readlink -f "$(command -v java)"):h:h}"
+  fi
 fi
 
 # Starship prompt

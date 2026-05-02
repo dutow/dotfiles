@@ -1,0 +1,5 @@
+---
+android_dev_packages:
+  - openjdk-21-jdk-headless
+  - unzip
+  - curl

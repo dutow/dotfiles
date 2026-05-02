@@ -48,6 +48,9 @@
     - role: selenium
       tags: selenium
       when: "'selenium' in dotfiles_sets"
+    - role: android-dev
+      tags: android-dev
+      when: "'android-dev' in dotfiles_sets"
 
     - role: ai-tools
       tags: ai-tools
