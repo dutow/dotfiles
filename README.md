@@ -209,6 +209,45 @@ A single mount is just `export DCONT_MOUNT=$PWD`.
 
 AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context directory is mounted in full at `~/.aicontext` inside the container; `~/.claude` and `~/.codex` are symlinks into that mount, so other LLM-related shared state (e.g. plugin repos) can live alongside them.
 
+#### Per-context init script
+
+For tools that don't fit the file-only model (shell installers, global npm
+packages, etc.), each context can ship an `init.sh` that runs once at
+container start, before the shell. Layout:
+
+```
+~/.aicont/<ctx>/
+├── claude/        Claude config (mounted at ~/.claude)
+├── codex/         Codex config (mounted at ~/.codex)
+├── init.sh        Optional, executable — your install recipe
+└── persist/       Tool-managed install state (auto-created)
+```
+
+The entrypoint exports these before running `init.sh`, so installers land in
+`persist/` instead of clobbering the image's `~/.local` and `~/.config`:
+
+| Variable             | Value                                    |
+| -------------------- | ---------------------------------------- |
+| `AICONT_PERSIST`     | `~/.aicontext/persist`                   |
+| `PATH`               | prepended with `$AICONT_PERSIST/{bin,npm/bin,python/bin}` |
+| `NPM_CONFIG_PREFIX`  | `$AICONT_PERSIST/npm`                    |
+| `PYTHONUSERBASE`     | `$AICONT_PERSIST/python`                 |
+
+Output is teed to `~/.aicontext/init.log`. A failing `init.sh` doesn't abort
+container start — the error is logged and you drop into the shell. Wipe and
+reinstall with `rm -rf ~/.aicont/<ctx>/persist` (the recipe in `init.sh`
+remains).
+
+Example `~/.aicont/explore/init.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -e
+command -v cavemem >/dev/null || { npm install -g cavemem && cavemem install; }
+command -v caveman >/dev/null || \
+    curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash
+```
+
 A `Taskfile.yml` is also provided for [go-task](https://taskfile.dev/) users:
 
 ```bash

@@ -267,7 +267,7 @@ cmd_run() {
 
     local aicont_dir="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
     local ctx_dir="$aicont_dir/$context"
-    mkdir -p "$ctx_dir/claude" "$ctx_dir/codex"
+    mkdir -p "$ctx_dir/claude" "$ctx_dir/codex" "$ctx_dir/persist"
 
     # Sync system-level CLAUDE.md into the context's claude dir
     local src_claude_md="$HOME/.claude/CLAUDE.md"

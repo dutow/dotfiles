@@ -1,10 +1,25 @@
 #!/usr/bin/env bash
-# dcont-entrypoint — image ENTRYPOINT; runs egress init then execs CMD.
+# dcont-entrypoint — image ENTRYPOINT; runs egress init, sets up the
+# per-context persist tree, runs the user's init.sh, then execs CMD.
 set -e
 
 case "${DCONT_AUDIT_MODE:-off}" in
     strict) sudo /usr/local/sbin/dcont-egress-init ;;
 esac
+
+export AICONT_PERSIST="$HOME/.aicontext/persist"
+mkdir -p "$AICONT_PERSIST/bin" "$AICONT_PERSIST/npm" "$AICONT_PERSIST/python"
+export PATH="$AICONT_PERSIST/bin:$AICONT_PERSIST/npm/bin:$AICONT_PERSIST/python/bin:$PATH"
+export NPM_CONFIG_PREFIX="$AICONT_PERSIST/npm"
+export PYTHONUSERBASE="$AICONT_PERSIST/python"
+
+if [ -x "$HOME/.aicontext/init.sh" ]; then
+    "$HOME/.aicontext/init.sh" 2>&1 | tee "$HOME/.aicontext/init.log"
+    rc=${PIPESTATUS[0]}
+    if [ "$rc" -ne 0 ]; then
+        echo "[dcont] init.sh failed (exit $rc) — see ~/.aicontext/init.log" >&2
+    fi
+fi
 
 if [ $# -eq 0 ]; then
     exec /bin/zsh
