@@ -67,6 +67,16 @@
       ansible.builtin.command: "{{ dcont_guest_ca_update_cmd }}"
       become: true
       changed_when: true
+    # Node.js ships its own CA bundle and does not consult the system trust
+    # store, so a distro-independent copy is staged here for NODE_EXTRA_CA_CERTS.
+    - name: Stage CA at distro-independent path for tools that need an explicit file
+      ansible.builtin.copy:
+        src: "{{ dotfiles_dir }}/.mitmproxy-ca-cert.pem"
+        dest: /usr/local/share/dcont-mitmproxy-ca.crt
+        owner: root
+        group: root
+        mode: "0644"
+      become: true
 
 - name: Warn when CA not staged
   ansible.builtin.debug:

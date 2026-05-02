@@ -23,6 +23,12 @@ if [ -n "${HTTPS_PROXY:-}" ]; then
     export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-Dhttps.proxyHost=$proxy_host -Dhttps.proxyPort=$proxy_port -Dhttp.proxyHost=$proxy_host -Dhttp.proxyPort=$proxy_port -Dhttp.nonProxyHosts=localhost|127.0.0.1"
 fi
 
+# Node ships its own CA bundle and ignores the system trust store, so npm
+# trips on the mitmproxy cert. Point it at the staged CA file.
+if [ -f /usr/local/share/dcont-mitmproxy-ca.crt ]; then
+    export NODE_EXTRA_CA_CERTS=/usr/local/share/dcont-mitmproxy-ca.crt
+fi
+
 if [ -x "$HOME/.aicontext/init.sh" ]; then
     "$HOME/.aicontext/init.sh" 2>&1 | tee "$HOME/.aicontext/init.log"
     rc=${PIPESTATUS[0]}
