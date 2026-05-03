@@ -35,6 +35,7 @@
       - android-dev
       - ai-tools
       - kubernetes
+      - development-tools
   when:
     - dotfiles_sets is not defined
     - dotfiles_env in ['desktop', 'wsl']

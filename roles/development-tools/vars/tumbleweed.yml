@@ -1,0 +1,6 @@
+---
+cosmian_pkg_format: rpm
+cosmian_arch: "{{ cosmian_arch_rpm_map[ansible_architecture] | default('') }}"
+
+cosmian_server_url: "https://github.com/Cosmian/kms/releases/download/{{ cosmian_kms_version }}/cosmian-kms-server-non-fips-static-openssl_{{ cosmian_kms_version }}_{{ cosmian_arch }}.rpm"
+cosmian_cli_url:    "https://github.com/Cosmian/kms/releases/download/{{ cosmian_kms_version }}/cosmian-kms-cli-non-fips-static-openssl_{{ cosmian_kms_version }}_{{ cosmian_arch }}.rpm"

@@ -67,6 +67,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `android-dev`| JDK 21, Android SDK/NDK bootstrap helper, kotlin-language-server |
 | `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
 | `kubernetes` | Docker, minikube, kubectl, helm, k3d                      |
+| `development-tools` | cosmian-kms (KMIP server + `ckms` CLI) for integration testing |
 
 ## Ansible roles
 
@@ -89,6 +90,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `android-dev`   | android-dev    | `'android-dev' in dotfiles_sets` | JDK + Android SDK/NDK bootstrap (lives in aicontext persist) |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
 | `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | Docker, minikube, kubectl, helm, k3d                 |
+| `development-tools` | development-tools | `'development-tools' in dotfiles_sets` | Generic dev binaries — cosmian-kms server + `ckms` CLI |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |

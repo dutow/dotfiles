@@ -1,0 +1,107 @@
+---
+- name: Load distro-specific package config
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Fail if architecture is unsupported
+  ansible.builtin.fail:
+    msg: >-
+      Unsupported architecture for cosmian-kms: {{ ansible_architecture }}.
+      Only x86_64 and aarch64 are supported.
+  when: cosmian_arch == ''
+
+- name: Check installed cosmian_kms version
+  ansible.builtin.command: cosmian_kms --version
+  register: cosmian_kms_check
+  changed_when: false
+  failed_when: false
+
+- name: Check installed ckms CLI version
+  ansible.builtin.command: ckms --version
+  register: cosmian_cli_check
+  changed_when: false
+  failed_when: false
+
+- name: Decide whether install is needed
+  ansible.builtin.set_fact:
+    cosmian_install_needed: >-
+      {{
+        cosmian_kms_check.rc != 0
+        or cosmian_cli_check.rc != 0
+        or cosmian_kms_version not in (cosmian_kms_check.stdout | default(''))
+        or cosmian_kms_version not in (cosmian_cli_check.stdout | default(''))
+      }}
+
+- name: Download cosmian-kms server package
+  ansible.builtin.get_url:
+    url: "{{ cosmian_server_url }}"
+    dest: "/tmp/cosmian-kms-server-{{ cosmian_kms_version }}.{{ cosmian_pkg_format }}"
+    mode: "0644"
+  when: cosmian_install_needed | bool
+
+- name: Download cosmian CLI package
+  ansible.builtin.get_url:
+    url: "{{ cosmian_cli_url }}"
+    dest: "/tmp/cosmian-kms-cli-{{ cosmian_kms_version }}.{{ cosmian_pkg_format }}"
+    mode: "0644"
+  when: cosmian_install_needed | bool
+
+- name: Install cosmian-kms .deb packages (Ubuntu)
+  ansible.builtin.apt:
+    deb: "{{ item }}"
+    state: present
+  become: true
+  loop:
+    - "/tmp/cosmian-kms-server-{{ cosmian_kms_version }}.deb"
+    - "/tmp/cosmian-kms-cli-{{ cosmian_kms_version }}.deb"
+  when:
+    - cosmian_install_needed | bool
+    - cosmian_pkg_format == 'deb'
+
+- name: Install cosmian-kms .rpm packages (Tumbleweed)
+  community.general.zypper:
+    name: "{{ item }}"
+    state: present
+    disable_gpg_check: true
+  become: true
+  loop:
+    - "/tmp/cosmian-kms-server-{{ cosmian_kms_version }}.rpm"
+    - "/tmp/cosmian-kms-cli-{{ cosmian_kms_version }}.rpm"
+  when:
+    - cosmian_install_needed | bool
+    - cosmian_pkg_format == 'rpm'
+    - dotfiles_distro == 'tumbleweed'
+
+- name: Install cosmian-kms .rpm packages (Oracle)
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: present
+    disable_gpg_check: true
+  become: true
+  loop:
+    - "/tmp/cosmian-kms-server-{{ cosmian_kms_version }}.rpm"
+    - "/tmp/cosmian-kms-cli-{{ cosmian_kms_version }}.rpm"
+  when:
+    - cosmian_install_needed | bool
+    - cosmian_pkg_format == 'rpm'
+    - dotfiles_distro == 'oracle'
+
+- name: Make cosmian_kms readable and executable for non-root users
+  ansible.builtin.file:
+    path: /usr/sbin/cosmian_kms
+    mode: "0755"
+  become: true
+  when: cosmian_install_needed | bool
+
+- name: Verify cosmian_kms is on PATH and reports the pinned version
+  ansible.builtin.command: cosmian_kms --version
+  register: cosmian_kms_verify
+  changed_when: false
+  failed_when: cosmian_kms_version not in cosmian_kms_verify.stdout
+  when: cosmian_install_needed | bool
+
+- name: Verify ckms is on PATH and reports the pinned version
+  ansible.builtin.command: ckms --version
+  register: cosmian_cli_verify
+  changed_when: false
+  failed_when: cosmian_kms_version not in cosmian_cli_verify.stdout
+  when: cosmian_install_needed | bool

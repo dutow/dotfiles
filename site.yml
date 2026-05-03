@@ -58,6 +58,9 @@
     - role: kubernetes
       tags: kubernetes
       when: "'kubernetes' in dotfiles_sets"
+    - role: development-tools
+      tags: development-tools
+      when: "'development-tools' in dotfiles_sets"
     - role: desktop
       tags: desktop
       when: "dotfiles_env in ['desktop', 'wsl']"

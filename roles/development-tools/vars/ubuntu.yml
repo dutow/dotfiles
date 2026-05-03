@@ -1,0 +1,6 @@
+---
+cosmian_pkg_format: deb
+cosmian_arch: "{{ cosmian_arch_deb_map[ansible_architecture] | default('') }}"
+
+cosmian_server_url: "https://github.com/Cosmian/kms/releases/download/{{ cosmian_kms_version }}/cosmian-kms-server-non-fips-static-openssl_{{ cosmian_kms_version }}_{{ cosmian_arch }}.deb"
+cosmian_cli_url:    "https://github.com/Cosmian/kms/releases/download/{{ cosmian_kms_version }}/cosmian-kms-cli-non-fips-static-openssl_{{ cosmian_kms_version }}_{{ cosmian_arch }}.deb"
