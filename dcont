@@ -78,13 +78,15 @@ cmd_build() {
     local sets="$ALL_SETS"
     local tag=""
     local runtime=""
+    local incremental=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --distro)  distro="$2"; shift 2 ;;
-            --sets)    sets="$2"; shift 2 ;;
-            --tag)     tag="$2"; shift 2 ;;
-            --runtime) runtime="$2"; shift 2 ;;
+            --distro)      distro="$2"; shift 2 ;;
+            --sets)        sets="$2"; shift 2 ;;
+            --tag)         tag="$2"; shift 2 ;;
+            --runtime)     runtime="$2"; shift 2 ;;
+            --incremental) incremental=true; shift ;;
             *) echo "Unknown build option: $1" >&2; exit 1 ;;
         esac
     done
@@ -101,6 +103,16 @@ cmd_build() {
     local base_image="${DISTRO_IMAGES[$distro]}"
     local bootstrap="${DISTRO_BOOTSTRAP[$distro]}"
     local build_container="dotfiles-build-$$"
+
+    local from_image="$base_image"
+    if [ "$incremental" = true ]; then
+        if "$rt" image inspect "$image_name" &>/dev/null; then
+            from_image="$image_name"
+        else
+            echo "==> --incremental requested but $image_name not found; doing full build"
+            incremental=false
+        fi
+    fi
 
     local sudo_password_file="$BASEDIR/.container_sudo_password"
     if [ ! -f "$sudo_password_file" ]; then
@@ -140,13 +152,23 @@ cmd_build() {
     echo "  Sets:    $sets"
     echo "  Runtime: $rt"
     echo "  User:    $host_user ($host_uid:$host_gid)"
+    if [ "$incremental" = true ]; then
+        echo "  Mode:    incremental (from $image_name)"
+    fi
     echo
 
     echo "==> Creating build container..."
-    "$rt" run -d --name "$build_container" "$base_image" sleep infinity
+    local run_extra=()
+    if [ "$incremental" = true ]; then
+        # Override the baked-in USER from the prior commit so build steps run as root.
+        run_extra+=(--user 0:0)
+    fi
+    "$rt" run -d "${run_extra[@]}" --name "$build_container" "$from_image" sleep infinity
 
-    echo "==> Bootstrapping packages..."
-    "$rt" exec "$build_container" bash -c "$bootstrap"
+    if [ "$incremental" = false ]; then
+        echo "==> Bootstrapping packages..."
+        "$rt" exec "$build_container" bash -c "$bootstrap"
+    fi
 
     echo "==> Creating user $host_user..."
     "$rt" exec "$build_container" bash -c "
@@ -449,6 +471,9 @@ Build options:
   --sets <sets>            Comma-separated package sets (default: $ALL_SETS)
   --tag <name>             Image tag (default: derived from distro)
   --runtime <podman|docker> Override runtime detection
+  --incremental            Build on top of existing image (skips OS bootstrap;
+                           relies on Ansible idempotency for the diff). Falls
+                           back to full build if the image doesn't exist yet.
 
 Run options:
   --tag <tag>              Image tag to run (default: $DEFAULT_DISTRO)
