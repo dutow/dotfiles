@@ -1,6 +1,8 @@
 ---
 cpp_dev_packages:
   - build-essential
+  - gcc-16
+  - g++-16
   - clang
   - clangd
   - clang-format

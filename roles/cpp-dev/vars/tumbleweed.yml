@@ -2,6 +2,8 @@
 cpp_dev_packages:
   - gcc
   - gcc-c++
+  - gcc16
+  - gcc16-c++
   - clang
   - clang-devel
   - llvm-devel

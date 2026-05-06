@@ -2,6 +2,22 @@
 - name: Load distro-specific package names
   ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
 
+- name: Add ubuntu-toolchain-r PPA signing key (Ubuntu)
+  ansible.builtin.get_url:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60C317803A41BA51845E371A1E9377A2BA9EF27F"
+    dest: /usr/share/keyrings/ubuntu-toolchain-r.asc
+    mode: '0644'
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
+- name: Add ubuntu-toolchain-r PPA repository (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/ubuntu-toolchain-r.asc] https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu {{ ansible_distribution_release | lower }} main"
+    state: present
+    filename: ubuntu-toolchain-r
+  become: true
+  when: dotfiles_distro == 'ubuntu'
+
 - name: Install C/C++ development packages
   ansible.builtin.package:
     name: "{{ cpp_dev_packages }}"
