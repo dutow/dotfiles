@@ -18,13 +18,13 @@
     enabled: true
     overwrite_multiple: true
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
 
 - name: Install NVIDIA driver packages
   ansible.builtin.command:
     cmd: zypper --non-interactive --gpg-auto-import-keys install --auto-agree-with-licenses nvidia-video-G06 nvidia-driver-G06-kmp-default nvidia-gl-G06
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
   register: nvidia_install
   changed_when: "'Nothing to do' not in nvidia_install.stdout"
 
@@ -33,7 +33,7 @@
     key: https://nvidia.github.io/libnvidia-container/gpgkey
     state: present
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
 
 - name: Add NVIDIA Container Toolkit repository
   community.general.zypper_repository:
@@ -43,20 +43,34 @@
     autorefresh: true
     enabled: true
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
 
 - name: Install NVIDIA container toolkit
   ansible.builtin.package:
     name: nvidia-container-toolkit
     state: present
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
 
 - name: Generate NVIDIA CDI spec
   ansible.builtin.command:
     cmd: nvidia-ctk cdi generate --output /etc/cdi/nvidia.yaml
   become: true
-  when: desktop_nvidia_gpu
+  when: desktop_gpu == 'nvidia'
   register: cdi_generate
   changed_when: cdi_generate.rc == 0
   failed_when: false
+
+- name: Install AMD GPU userspace packages
+  ansible.builtin.package:
+    name:
+      - libvulkan_radeon
+      - vulkan-tools
+      - Mesa-libva
+      - rocminfo
+      - rocm-smi
+      - rocm-opencl
+      - rocm-hip
+    state: present
+  become: true
+  when: desktop_gpu == 'amd'

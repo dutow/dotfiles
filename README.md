@@ -91,7 +91,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
 | `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | Docker, minikube, kubectl, helm, k3d                 |
 | `development-tools` | development-tools | `'development-tools' in dotfiles_sets` | Generic dev binaries — cosmian-kms server + `ckms` CLI |
-| `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA drivers (opt.) |
+| `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA/AMD drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |
 | `wsl`           | wsl            | env is `wsl`                     | WSL-specific config (placeholder)                  |
@@ -107,14 +107,18 @@ The desktop role also adds the local user to the `kvm` group so the Android
 emulator (and other KVM workloads) can use `/dev/kvm`. Re-login required
 after first install.
 
-### NVIDIA drivers
+### GPU drivers
 
-NVIDIA GPU support is opt-in per host via the `desktop_nvidia_gpu` variable in `inventory/host_vars/`. When enabled, the NVIDIA repository is added and G06 driver packages are installed. Defaults to `false`.
+GPU vendor is selected per host via the `desktop_gpu` variable in `inventory/host_vars/`. Valid values: `nvidia`, `amd`, `none` (default).
 
 ```yaml
 # inventory/host_vars/<hostname>.yml
-desktop_nvidia_gpu: true
+desktop_gpu: nvidia   # G06 driver packages + NVIDIA Container Toolkit + CDI spec
+desktop_gpu: amd      # RADV Vulkan + Mesa VA-API + ROCm (rocminfo, rocm-smi, rocm-opencl, rocm-hip)
+desktop_gpu: none     # rely on in-kernel drivers + base Mesa only
 ```
+
+The `amd` profile assumes the in-kernel `amdgpu` driver. For very new hardware (RDNA4 / gfx12) make sure `kernel-firmware-amdgpu` is current and the installed ROCm version supports the GPU.
 
 ## Dotbot symlinks
 
