@@ -1,3 +1,5 @@
 ---
 neovim_packages:
-  - neovim
+  - gcc
+neovim_install_upstream: true
+neovim_install_upstream_treesitter: true

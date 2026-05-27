@@ -18,8 +18,78 @@
   become: true
   when: dotfiles_distro == 'ubuntu'
 
-- name: Install neovim
+- name: Install neovim packages
   ansible.builtin.package:
     name: "{{ neovim_packages }}"
     state: present
   become: true
+  when: neovim_packages | length > 0
+
+- name: Install neovim from upstream tarball
+  when: neovim_install_upstream | default(false)
+  block:
+    - name: Get latest neovim release info
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/neovim/neovim-releases/releases/latest
+        return_content: true
+      register: nvim_release_info
+
+    - name: Check installed neovim version
+      ansible.builtin.command: nvim --version
+      register: nvim_version_check
+      changed_when: false
+      failed_when: false
+
+    - name: Install or update neovim
+      when: nvim_version_check.rc != 0 or nvim_release_info.json.tag_name not in nvim_version_check.stdout
+      become: true
+      block:
+        - name: Remove previous neovim install dir
+          ansible.builtin.file:
+            path: /opt/nvim-linux-x86_64
+            state: absent
+
+        - name: Extract neovim tarball
+          ansible.builtin.unarchive:
+            src: "https://github.com/neovim/neovim-releases/releases/download/{{ nvim_release_info.json.tag_name }}/nvim-linux-x86_64.tar.gz"
+            dest: /opt/
+            remote_src: true
+
+        - name: Symlink neovim binary into PATH
+          ansible.builtin.file:
+            src: /opt/nvim-linux-x86_64/bin/nvim
+            dest: /usr/local/bin/nvim
+            state: link
+            force: true
+
+- name: Install tree-sitter CLI from upstream
+  when: neovim_install_upstream_treesitter | default(false)
+  block:
+    - name: Get latest tree-sitter release info
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/tree-sitter/tree-sitter/releases/latest
+        return_content: true
+      register: ts_release_info
+
+    - name: Set tree-sitter target version
+      ansible.builtin.set_fact:
+        ts_target_version: "{{ ts_release_info.json.tag_name | regex_replace('^v', '') }}"
+
+    - name: Check installed tree-sitter version
+      ansible.builtin.command: tree-sitter --version
+      register: ts_version_check
+      changed_when: false
+      failed_when: false
+
+    - name: Download and install tree-sitter CLI
+      when: ts_version_check.rc != 0 or ts_target_version not in ts_version_check.stdout
+      ansible.builtin.shell: |
+        set -e
+        TMPDIR=$(mktemp -d)
+        trap "rm -rf $TMPDIR" EXIT
+        cd "$TMPDIR"
+        curl -fsSL "https://github.com/tree-sitter/tree-sitter/releases/download/v{{ ts_target_version }}/tree-sitter-linux-x64.gz" -o tree-sitter.gz
+        gunzip tree-sitter.gz
+        chmod +x tree-sitter
+        install -m 0755 tree-sitter /usr/local/bin/tree-sitter
+      become: true

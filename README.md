@@ -78,7 +78,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `detect`        | always         | —                                | Auto-detect distro, environment, and sets         |
 | `base`          | base           | —                                | Core packages (curl, git, wget, ssh, jq)          |
 | `shell`         | shell          | —                                | zsh + starship prompt                             |
-| `neovim`        | neovim         | —                                | Neovim (unstable PPA on Ubuntu)                   |
+| `neovim`        | neovim         | —                                | Neovim + tree-sitter CLI (PPA on Ubuntu, upstream tarball on Oracle) |
 | `git-tools`     | git-tools      | —                                | git, tig, delta, gh                               |
 | `console-tools` | console-tools  | —                                | mc, ripgrep, fd, tmux, glances, go-task            |
 | `cpp-dev`       | cpp-dev        | `'cpp-dev' in dotfiles_sets`     | C/C++ toolchain                                   |

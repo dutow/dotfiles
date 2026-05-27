@@ -187,9 +187,10 @@ cmd_build() {
 
     echo "==> Setting up .aicontext symlinks..."
     "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" "$build_container" bash -c "
-        mkdir -p /home/$host_user/.aicontext/claude /home/$host_user/.aicontext/codex
+        mkdir -p /home/$host_user/.aicontext/claude /home/$host_user/.aicontext/codex /home/$host_user/.aicontext/gsd
         ln -sfn /home/$host_user/.aicontext/claude /home/$host_user/.claude
         ln -sfn /home/$host_user/.aicontext/codex /home/$host_user/.codex
+        ln -sfn /home/$host_user/.aicontext/gsd /home/$host_user/.gsd
     "
 
     echo "==> Running install.sh --container --env console --sets $sets ..."
@@ -289,7 +290,7 @@ cmd_run() {
 
     local aicont_dir="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
     local ctx_dir="$aicont_dir/$context"
-    mkdir -p "$ctx_dir/claude" "$ctx_dir/codex" "$ctx_dir/persist"
+    mkdir -p "$ctx_dir/claude" "$ctx_dir/codex" "$ctx_dir/gsd" "$ctx_dir/persist"
 
     # Sync system-level CLAUDE.md into the context's claude dir
     local src_claude_md="$HOME/.claude/CLAUDE.md"

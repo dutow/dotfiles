@@ -1,3 +1,5 @@
 ---
 neovim_packages:
   - neovim
+  - tree-sitter
+  - gcc
