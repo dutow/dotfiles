@@ -188,9 +188,13 @@ cmd_build() {
     echo "==> Setting up .aicontext symlinks..."
     "$rt" exec --user "$host_uid" --env "HOME=/home/$host_user" "$build_container" bash -c "
         mkdir -p /home/$host_user/.aicontext/claude /home/$host_user/.aicontext/codex /home/$host_user/.aicontext/gsd
+        mkdir -p /home/$host_user/.aicontext/opencode/config /home/$host_user/.aicontext/opencode/share
+        mkdir -p /home/$host_user/.config /home/$host_user/.local/share
         ln -sfn /home/$host_user/.aicontext/claude /home/$host_user/.claude
         ln -sfn /home/$host_user/.aicontext/codex /home/$host_user/.codex
         ln -sfn /home/$host_user/.aicontext/gsd /home/$host_user/.gsd
+        ln -sfn /home/$host_user/.aicontext/opencode/config /home/$host_user/.config/opencode
+        ln -sfn /home/$host_user/.aicontext/opencode/share /home/$host_user/.local/share/opencode
     "
 
     echo "==> Running install.sh --container --env console --sets $sets ..."
@@ -291,6 +295,7 @@ cmd_run() {
     local aicont_dir="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
     local ctx_dir="$aicont_dir/$context"
     mkdir -p "$ctx_dir/claude" "$ctx_dir/codex" "$ctx_dir/gsd" "$ctx_dir/persist"
+    mkdir -p "$ctx_dir/opencode/config" "$ctx_dir/opencode/share"
 
     # Sync system-level CLAUDE.md into the context's claude dir
     local src_claude_md="$HOME/.claude/CLAUDE.md"

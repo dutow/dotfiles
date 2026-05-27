@@ -20,3 +20,19 @@
   environment:
     PATH: "{{ dotfiles_home }}/.local/bin:{{ ansible_facts.env.PATH }}"
   when: codex_check.rc != 0
+
+- name: Check if opencode is installed
+  ansible.builtin.stat:
+    path: "{{ dotfiles_home }}/.opencode/bin/opencode"
+  register: opencode_check
+
+- name: Install opencode
+  ansible.builtin.shell: curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path
+  when: not opencode_check.stat.exists
+
+- name: Symlink opencode into ~/.local/bin
+  ansible.builtin.file:
+    src: "{{ dotfiles_home }}/.opencode/bin/opencode"
+    dest: "{{ dotfiles_home }}/.local/bin/opencode"
+    state: link
+    force: true

@@ -65,7 +65,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `python-dev` | Python via mise, python3-dev headers                     |
 | `selenium`   | Firefox for headless browser automation                       |
 | `android-dev`| JDK 21, Android SDK/NDK bootstrap helper, kotlin-language-server |
-| `ai-tools`   | Claude Code, OpenAI Codex (requires node-dev for Codex)  |
+| `ai-tools`   | Claude Code, OpenAI Codex, opencode (requires node-dev for Codex) |
 | `kubernetes` | Docker, minikube, kubectl, helm, k3d                      |
 | `development-tools` | cosmian-kms (KMIP server + `ckms` CLI) for integration testing |
 
@@ -88,7 +88,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
 | `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox for headless browser automation              |
 | `android-dev`   | android-dev    | `'android-dev' in dotfiles_sets` | JDK + Android SDK/NDK bootstrap (lives in aicontext persist) |
-| `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex)           |
+| `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex, opencode) |
 | `kubernetes`    | kubernetes     | `'kubernetes' in dotfiles_sets`  | Docker, minikube, kubectl, helm, k3d                 |
 | `development-tools` | development-tools | `'development-tools' in dotfiles_sets` | Generic dev binaries — cosmian-kms server + `ckms` CLI |
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA/AMD drivers (opt.) |
@@ -219,7 +219,7 @@ export DCONT_MOUNT DCONT_CONTEXT=my-project DCONT_NETWORK=myproject_default
 
 A single mount is just `export DCONT_MOUNT=$PWD`.
 
-AI tool configs (Claude, Codex) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context directory is mounted in full at `~/.aicontext` inside the container; `~/.claude` and `~/.codex` are symlinks into that mount, so other LLM-related shared state (e.g. plugin repos) can live alongside them.
+AI tool configs (Claude, Codex, opencode) are persisted per-context under `$DOTFILES_AICONT_DIR` (defaults to `~/.aicont`). Each context directory is mounted in full at `~/.aicontext` inside the container; `~/.claude` and `~/.codex` are symlinks into that mount, and opencode's XDG paths (`~/.config/opencode`, `~/.local/share/opencode`) point at `~/.aicontext/opencode/{config,share}`, so other LLM-related shared state (e.g. plugin repos) can live alongside them.
 
 #### Per-context init script
 
@@ -231,6 +231,7 @@ container start, before the shell. Layout:
 ~/.aicont/<ctx>/
 ├── claude/        Claude config (mounted at ~/.claude)
 ├── codex/         Codex config (mounted at ~/.codex)
+├── opencode/      opencode config + share (mounted at ~/.config/opencode and ~/.local/share/opencode)
 ├── init.sh        Optional, executable — your install recipe
 └── persist/       Tool-managed install state (auto-created)
 ```
