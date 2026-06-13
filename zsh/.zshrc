@@ -56,17 +56,23 @@ if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
 
+# Android SDK lives at one fixed path on host and in containers alike, so a
+# project built inside dcont opens unchanged in host Android Studio (sdk.dir and
+# NDK paths match everywhere). In containers ~/Android/Sdk is a symlink into the
+# per-context persist dir, so the SDK still survives rebuilds.
+export ANDROID_HOME="$HOME/Android/Sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+path=("$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/platform-tools" $path)
+
 # Container-only aliases (dcont / docker / podman)
 if [[ -f /.dockerenv || -f /run/.containerenv ]]; then
   alias yclaude='claude --dangerously-skip-permissions'
 
-  # Android SDK / Gradle live in the per-context persist dir so they
-  # survive container rebuilds without leaking onto the host.
-  export ANDROID_HOME="$HOME/.aicontext/persist/android/sdk"
-  export ANDROID_SDK_ROOT="$ANDROID_HOME"
+  # Keep mutable Android state (gradle cache, adb keys, AVDs) in the per-context
+  # persist dir so it stays isolated and survives rebuilds. These paths don't
+  # leak into project files, so they don't need to match the host.
   export ANDROID_USER_HOME="$HOME/.aicontext/persist/android/user"
   export GRADLE_USER_HOME="$HOME/.aicontext/persist/android/gradle"
-  path=("$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/platform-tools" $path)
   if [[ -z "${JAVA_HOME:-}" ]] && command -v java &>/dev/null; then
     export JAVA_HOME="${$(readlink -f "$(command -v java)"):h:h}"
   fi

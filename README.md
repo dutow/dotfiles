@@ -266,13 +266,22 @@ command -v caveman >/dev/null || \
 Images built with the `android-dev` set ship a JDK plus the
 `dotfiles-android-init` helper. The helper downloads `commandlinetools` and
 runs `sdkmanager` to install platform-tools, `platforms;android-35`,
-`build-tools;35.0.0`, and `ndk;27.2.12479018` — all under
-`~/.aicontext/persist/android/` so the SDK is per-context and persists
-across container rebuilds (and never touches the host).
+`build-tools;35.0.0`, and `ndk;27.2.12479018`.
 
-Bootstrap once per context, either by running `dotfiles-android-init`
-manually after first `dcont run`, or by adding it to that context's
-`init.sh`:
+`ANDROID_HOME` is fixed at `~/Android/Sdk` everywhere — on a desktop host and
+inside every container — so a project built in a container opens unchanged in
+host Android Studio (its `sdk.dir` and NDK paths resolve to the same absolute
+path either way). On the host the SDK is a real directory there; inside a
+container `~/Android/Sdk` is a symlink into `~/.aicontext/persist/android/sdk`,
+so the SDK is still per-context and survives rebuilds. Mutable state that
+*doesn't* leak into project files — the gradle cache (`GRADLE_USER_HOME`) and
+adb keys / AVDs (`ANDROID_USER_HOME`) — stays in the per-context persist dir
+inside containers.
+
+On a desktop host the `android-dev` role bootstraps `~/Android/Sdk`
+automatically. Inside a container, bootstrap once per context by running
+`dotfiles-android-init` manually after first `dcont run`, or by adding it to
+that context's `init.sh`:
 
 ```bash
 #!/usr/bin/env bash

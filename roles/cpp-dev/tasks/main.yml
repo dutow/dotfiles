@@ -18,6 +18,14 @@
   become: true
   when: dotfiles_distro == 'ubuntu'
 
+- name: Replace busybox-gawk with gawk (Tumbleweed)
+  community.general.zypper:
+    name: gawk
+    state: present
+    force_resolution: true
+  become: true
+  when: dotfiles_distro == 'tumbleweed'
+
 - name: Install C/C++ development packages
   ansible.builtin.package:
     name: "{{ cpp_dev_packages }}"

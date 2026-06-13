@@ -49,7 +49,7 @@ return require('packer').startup(function(use)
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate',
     config = function()
-      local parsers = { 'cpp', 'c', 'lua', 'vim', 'vimdoc', 'query', 'python', 'perl', 'ruby', 'markdown', 'markdown_inline' }
+      local parsers = require('ts_parsers')
 
       require('nvim-treesitter').setup {
         install_dir = vim.fn.stdpath('data') .. '/site',

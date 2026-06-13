@@ -6,5 +6,6 @@ dotfiles_sets:
   - ruby-dev
   - node-dev
   - python-dev
+  - android-dev
   - ai-tools
   - kubernetes

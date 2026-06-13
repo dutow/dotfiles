@@ -17,6 +17,65 @@
     mode: "0755"
   become: true
 
+- name: Install Android Studio (native tarball, no Flatpak sandbox)
+  when: dotfiles_env == 'desktop'
+  block:
+    - name: Check whether Android Studio is installed
+      ansible.builtin.stat:
+        path: /opt/android-studio/bin/studio.sh
+      register: android_studio_installed
+
+    - name: Download and extract Android Studio
+      when: not android_studio_installed.stat.exists
+      block:
+        - name: Download Android Studio tarball
+          ansible.builtin.get_url:
+            url: "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/{{ android_studio_version }}/{{ android_studio_tarball }}"
+            dest: "/tmp/{{ android_studio_tarball }}"
+            checksum: "sha256:{{ android_studio_sha256 }}"
+            mode: "0644"
+
+        - name: Extract Android Studio to /opt
+          ansible.builtin.unarchive:
+            src: "/tmp/{{ android_studio_tarball }}"
+            dest: /opt
+            remote_src: true
+            creates: /opt/android-studio
+          become: true
+
+    - name: Symlink studio launcher onto PATH
+      ansible.builtin.file:
+        src: /opt/android-studio/bin/studio.sh
+        dest: /usr/local/bin/android-studio
+        state: link
+      become: true
+
+    - name: Install Android Studio desktop entry
+      ansible.builtin.copy:
+        dest: /usr/share/applications/android-studio.desktop
+        mode: "0644"
+        content: |
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Android Studio
+          Comment=Android development IDE
+          Exec=/opt/android-studio/bin/studio.sh %f
+          Icon=/opt/android-studio/bin/studio.png
+          Categories=Development;IDE;
+          Terminal=false
+          StartupNotify=true
+          StartupWMClass=jetbrains-studio
+      become: true
+
+    # Populate the SDK at the fixed ~/Android/Sdk path so the host (and Android
+    # Studio) share the same sdk.dir that dcont containers use. Runs as the
+    # invoking user; idempotent (no-op once populated).
+    - name: Bootstrap host Android SDK
+      ansible.builtin.command: dotfiles-android-init
+      register: android_host_sdk
+      changed_when: "'already populated' not in android_host_sdk.stdout"
+
 - name: Check whether mitmproxy CA is staged
   ansible.builtin.stat:
     path: "{{ dotfiles_dir }}/.mitmproxy-ca-cert.pem"

@@ -1,2 +1,6 @@
 ---
 kotlin_lsp_version: "1.3.13"
+
+android_studio_version: "2026.1.1.8"
+android_studio_tarball: "android-studio-quail1-linux.tar.gz"
+android_studio_sha256: "0c1fa4ba3cfabd07e48a90e00a5fa2ea2a82cd5870833dada5b0290c817d83d3"
