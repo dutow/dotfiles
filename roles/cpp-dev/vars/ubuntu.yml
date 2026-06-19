@@ -19,5 +19,7 @@ cpp_dev_packages:
   - pkg-config
   - libcurl4-openssl-dev
   - libipc-run-perl
+  - libjson-perl
+  - libjson-xs-perl
   - libssl-dev
   - liblz4-dev

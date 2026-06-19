@@ -7,4 +7,6 @@ console_tools_packages:
   - ncurses-base
   - lshw
   - perl-IPC-Run
+  - perl-JSON
+  - perl-JSON-XS
   - lz4-libs

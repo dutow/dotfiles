@@ -8,4 +8,6 @@ console_tools_packages:
   - glances
   - lshw
   - perl-IPC-Run
+  - perl-JSON
+  - perl-JSON-XS
   - liblz4-1

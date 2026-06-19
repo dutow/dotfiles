@@ -190,6 +190,7 @@ cmd_build() {
         mkdir -p /home/$host_user/.aicontext/claude /home/$host_user/.aicontext/codex /home/$host_user/.aicontext/gsd
         mkdir -p /home/$host_user/.aicontext/opencode/config /home/$host_user/.aicontext/opencode/share
         mkdir -p /home/$host_user/.aicontext/persist/android/sdk
+        mkdir -p /home/$host_user/.aicontext/persist/gh
         mkdir -p /home/$host_user/.config /home/$host_user/.local/share /home/$host_user/Android
         ln -sfn /home/$host_user/.aicontext/claude /home/$host_user/.claude
         ln -sfn /home/$host_user/.aicontext/codex /home/$host_user/.codex
@@ -197,6 +198,7 @@ cmd_build() {
         ln -sfn /home/$host_user/.aicontext/opencode/config /home/$host_user/.config/opencode
         ln -sfn /home/$host_user/.aicontext/opencode/share /home/$host_user/.local/share/opencode
         ln -sfn /home/$host_user/.aicontext/persist/android/sdk /home/$host_user/Android/Sdk
+        ln -sfn /home/$host_user/.aicontext/persist/gh /home/$host_user/.config/gh
     "
 
     echo "==> Running install.sh --container --env console --sets $sets ..."
@@ -301,6 +303,8 @@ cmd_run() {
     # Pre-create the SDK dir so the in-image ~/Android/Sdk symlink resolves (a
     # dangling symlink would break `mkdir -p $ANDROID_HOME` in the bootstrap).
     mkdir -p "$ctx_dir/persist/android/sdk"
+    # Persist gh auth/config across sessions (in-image ~/.config/gh symlink).
+    mkdir -p "$ctx_dir/persist/gh"
 
     # Sync system-level CLAUDE.md into the context's claude dir
     local src_claude_md="$HOME/.claude/CLAUDE.md"

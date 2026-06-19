@@ -234,6 +234,7 @@ container start, before the shell. Layout:
 ├── opencode/      opencode config + share (mounted at ~/.config/opencode and ~/.local/share/opencode)
 ├── init.sh        Optional, executable — your install recipe
 └── persist/       Tool-managed install state (auto-created)
+    └── gh/         GitHub CLI auth/config (mounted at ~/.config/gh)
 ```
 
 The entrypoint exports these before running `init.sh`, so installers land in
