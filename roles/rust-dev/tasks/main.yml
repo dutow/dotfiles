@@ -1,0 +1,33 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install Rust build dependencies
+  ansible.builtin.package:
+    name: "{{ rust_dev_packages }}"
+    state: present
+  become: true
+
+- name: Install Rust toolchain via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global rust@latest"
+  environment:
+    MISE_YES: "1"
+
+- name: Add rust-src component (needed for rust-analyzer std library support)
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise exec rust -- rustup component add rust-src"
+  environment:
+    MISE_YES: "1"
+
+- name: Install rust-analyzer via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global rust-analyzer@latest"
+  environment:
+    MISE_YES: "1"
+
+- name: Install common cargo tools via mise
+  ansible.builtin.command: "{{ dotfiles_home }}/.local/bin/mise use --global {{ item }}"
+  environment:
+    MISE_YES: "1"
+  loop:
+    - "cargo:cargo-edit"
+    - "cargo:cargo-watch"
+    - "cargo:cargo-nextest"

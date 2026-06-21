@@ -1,0 +1,5 @@
+---
+rust_dev_packages:
+  - gcc
+  - pkgconfig
+  - openssl-devel

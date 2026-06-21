@@ -28,6 +28,7 @@
   ansible.builtin.set_fact:
     dotfiles_sets:
       - cpp-dev
+      - rust-dev
       - ruby-dev
       - node-dev
       - python-dev

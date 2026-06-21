@@ -104,6 +104,7 @@ return require('packer').startup(function(use)
 
     config = function()
             vim.lsp.enable('clangd')
+            vim.lsp.enable('rust_analyzer')
     end
   }
 

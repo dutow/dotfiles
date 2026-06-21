@@ -60,6 +60,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | Set          | What it installs                                        |
 |--------------|---------------------------------------------------------|
 | `cpp-dev`    | gcc, clang, cmake, ninja, meson, flex, bison, and libs  |
+| `rust-dev`   | Rust toolchain (rustc, cargo, clippy, rustfmt) + rust-analyzer & cargo tools via mise |
 | `ruby-dev`   | Ruby via mise, build dependencies                        |
 | `node-dev`   | Node.js (LTS) via mise                                   |
 | `python-dev` | Python via mise, python3-dev headers                     |
@@ -82,6 +83,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `git-tools`     | git-tools      | —                                | git, tig, delta, gh                               |
 | `console-tools` | console-tools  | —                                | mc, ripgrep, fd, tmux, glances, go-task            |
 | `cpp-dev`       | cpp-dev        | `'cpp-dev' in dotfiles_sets`     | C/C++ toolchain                                   |
+| `rust-dev`      | rust-dev       | `'rust-dev' in dotfiles_sets`    | Rust toolchain + rust-analyzer + cargo tools via mise |
 | `mise`          | mise           | any language dev set active       | mise universal version manager                    |
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby via mise + build dependencies                |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js (LTS) via mise                            |
@@ -145,7 +147,7 @@ The `links` role runs Dotbot with two config files:
 ## Managed configurations
 
 - **zsh** — antidote plugin manager, zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions, starship prompt, mise activation
-- **mise** — universal version manager for Ruby, Node.js, Python (replaces rvm, system nodejs/npm, pip)
+- **mise** — universal version manager for Ruby, Node.js, Python, Rust (replaces rvm, system nodejs/npm, pip, rustup)
 - **Neovim** — Packer plugins, Treesitter, LSP (clangd), Telescope, nvim-tree, gitsigns, Solarized theme
 - **Git** — delta pager, zdiff3 merge style
 - **Ghostty** — Fira Code Nerd Font, Solarized Dark theme
