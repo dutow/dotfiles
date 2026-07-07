@@ -10,7 +10,9 @@ cpp_dev_packages:
   - libc++-dev
   - libc++abi-dev
   - llvm-dev
+  - lld
   - lldb
+  - rr
   - cmake
   - ninja-build
   - meson

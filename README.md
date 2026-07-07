@@ -63,7 +63,7 @@ These are included automatically for `wsl` and `desktop` environments, but can b
 | `rust-dev`   | Rust toolchain (rustc, cargo, clippy, rustfmt) + rust-analyzer & cargo tools via mise |
 | `ruby-dev`   | Ruby via mise, build dependencies                        |
 | `node-dev`   | Node.js (LTS) via mise                                   |
-| `python-dev` | Python via mise, python3-dev headers                     |
+| `python-dev` | Python & uv via mise, python3-dev headers                |
 | `selenium`   | Firefox for headless browser automation                       |
 | `android-dev`| JDK 21, Android SDK/NDK bootstrap helper, kotlin-language-server |
 | `ai-tools`   | Claude Code, OpenAI Codex, opencode (requires node-dev for Codex) |
@@ -87,7 +87,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `mise`          | mise           | any language dev set active       | mise universal version manager                    |
 | `ruby-dev`      | ruby-dev       | `'ruby-dev' in dotfiles_sets`    | Ruby via mise + build dependencies                |
 | `node-dev`      | node-dev       | `'node-dev' in dotfiles_sets`    | Node.js (LTS) via mise                            |
-| `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python via mise + dev headers                     |
+| `python-dev`    | python-dev     | `'python-dev' in dotfiles_sets`  | Python & uv via mise + dev headers                |
 | `selenium`       | selenium       | `'selenium' in dotfiles_sets`    | Firefox for headless browser automation              |
 | `android-dev`   | android-dev    | `'android-dev' in dotfiles_sets` | JDK + Android SDK/NDK bootstrap (lives in aicontext persist) |
 | `ai-tools`      | ai-tools       | `'ai-tools' in dotfiles_sets`    | AI development tools (Claude Code, Codex, opencode) |

@@ -10,6 +10,15 @@ esac
 export AICONT_PERSIST="$HOME/.aicontext/persist"
 mkdir -p "$AICONT_PERSIST/bin" "$AICONT_PERSIST/npm" "$AICONT_PERSIST/python"
 export PATH="$AICONT_PERSIST/bin:$AICONT_PERSIST/npm/bin:$AICONT_PERSIST/python/bin:$PATH"
+
+# Persist ssh keys/config per context. ssh refuses keys with loose perms,
+# so lock the dir to 700. Point ~/.ssh at it (replace any image-baked dir).
+mkdir -p "$AICONT_PERSIST/ssh"
+chmod 700 "$AICONT_PERSIST/ssh"
+if [ ! -L "$HOME/.ssh" ]; then
+    rm -rf "$HOME/.ssh"
+    ln -sfn "$AICONT_PERSIST/ssh" "$HOME/.ssh"
+fi
 export NPM_CONFIG_PREFIX="$AICONT_PERSIST/npm"
 export PYTHONUSERBASE="$AICONT_PERSIST/python"
 

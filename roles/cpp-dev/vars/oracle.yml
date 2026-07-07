@@ -5,7 +5,9 @@ cpp_dev_packages:
   - clang
   - clang-devel
   - llvm-devel
+  - lld
   - lldb
+  - rr
   - cmake
   - ninja-build
   - meson

@@ -305,6 +305,10 @@ cmd_run() {
     mkdir -p "$ctx_dir/persist/android/sdk"
     # Persist gh auth/config across sessions (in-image ~/.config/gh symlink).
     mkdir -p "$ctx_dir/persist/gh"
+    # Persist ssh keys/config per context (entrypoint symlinks ~/.ssh here).
+    # ssh requires 700 on the dir, so pre-create it with the right mode.
+    mkdir -p "$ctx_dir/persist/ssh"
+    chmod 700 "$ctx_dir/persist/ssh"
 
     # Sync system-level CLAUDE.md into the context's claude dir
     local src_claude_md="$HOME/.claude/CLAUDE.md"

@@ -7,8 +7,10 @@ cpp_dev_packages:
   - clang
   - clang-devel
   - llvm-devel
+  - lld
   - lldb
   - gdb
+  - rr
   - strace
   - debuginfod-client
   - debuginfod-profile

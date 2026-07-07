@@ -92,6 +92,8 @@ for s in "${subnets_v6[@]}"; do
     esac
 done
 
+# Allow outbound ssh (tcp/22). ssh is not http so it can't use the proxy;
+# this lets git-over-ssh work in strict mode, but that traffic is NOT audited.
 nft -f - <<EOF
 table inet dcont_egress {
   chain output {
@@ -100,6 +102,7 @@ table inet dcont_egress {
     ct state established,related accept
     ip daddr ${gw_ip} tcp dport ${DCONT_PROXY_PORT} accept
     ip daddr ${gw_ip} drop
+    tcp dport 22 accept
 ${v4_rules}${v6_rules}  }
 }
 EOF
