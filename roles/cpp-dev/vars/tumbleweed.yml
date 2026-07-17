@@ -62,3 +62,10 @@ cpp_dev_packages:
   - glycin-loaders
   - patterns-devel-base-devel_basis
   - liblz4-devel
+  - libxml2-devel
+  - libbz2-devel
+  - libyaml-devel
+  - libssh2-devel
+  - systemd-devel
+  - valgrind
+  - ccache

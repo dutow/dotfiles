@@ -384,13 +384,27 @@ cmd_run() {
     done
 
     if [ "$gpu" = true ]; then
-        run_args+=(--device nvidia.com/gpu=all)
+        # AMD/Radeon passthrough: DRI render/display nodes + KFD (ROCm compute)
+        local dev
+        for dev in /dev/dri/card* /dev/dri/renderD* /dev/kfd; do
+            [ -e "$dev" ] && run_args+=(--device "$dev")
+        done
 
-        # Pass through NVIDIA Vulkan ICD
-        local nvidia_icd="/usr/share/vulkan/icd.d/nvidia_icd.x86_64.json"
-        if [ -f "$nvidia_icd" ]; then
-            run_args+=(-v "$nvidia_icd:$nvidia_icd:ro")
+        # Node access comes from the logind uaccess ACL (podman keep-id and
+        # rootful docker both run as the host uid). Also add the device
+        # groups so it still works on hosts without that ACL.
+        if [ "$rt" = "podman" ]; then
+            run_args+=(--group-add keep-groups)
+        else
+            local grp gid
+            for grp in render video; do
+                gid="$(getent group "$grp" | cut -d: -f3)"
+                [ -n "$gid" ] && run_args+=(--group-add "$gid")
+            done
         fi
+
+        # The RADV Vulkan driver + ICD live in the guest image (dcont-guest
+        # role), so nothing to mount from the host here.
 
         # Pass through Wayland display
         if [ -n "$WAYLAND_DISPLAY" ]; then
@@ -501,7 +515,7 @@ Run options:
                            network name or 'host' for host networking
   --context <name>         AI config context name (default: default)
   --shell <shell>          Override shell (default: /bin/zsh)
-  --gpu                    Enable GPU passthrough (NVIDIA CDI)
+  --gpu                    Enable GPU passthrough (AMD/Radeon DRI + KFD)
   --audit <mode>           strict|soft|off (default: strict, env: DCONT_AUDIT)
   --runtime <podman|docker> Override runtime detection
 

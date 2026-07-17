@@ -4,5 +4,8 @@ dcont_guest_packages:
   - jq
   - iproute2
   - ca-certificates
+  # AMD/Radeon Vulkan for dcont --gpu (RADV driver + ICD + loader)
+  - mesa-vulkan-drivers
+  - vulkan-tools
 dcont_guest_ca_dir: /usr/local/share/ca-certificates
 dcont_guest_ca_update_cmd: /usr/sbin/update-ca-certificates

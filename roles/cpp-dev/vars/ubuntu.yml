@@ -25,3 +25,10 @@ cpp_dev_packages:
   - libjson-xs-perl
   - libssl-dev
   - liblz4-dev
+  - libxml2-dev
+  - libbz2-dev
+  - libyaml-dev
+  - libssh2-1-dev
+  - libsystemd-dev
+  - valgrind
+  - ccache

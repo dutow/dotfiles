@@ -17,3 +17,10 @@ cpp_dev_packages:
   - libcurl-devel
   - openssl-devel
   - lz4-devel
+  - libxml2-devel
+  - bzip2-devel
+  - libyaml-devel
+  - libssh2-devel
+  - systemd-devel
+  - valgrind
+  - ccache

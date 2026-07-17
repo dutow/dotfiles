@@ -10,3 +10,5 @@ console_tools_packages:
   - perl-JSON
   - perl-JSON-XS
   - lz4-libs
+  - rsync
+  - perl-YAML-LibYAML
