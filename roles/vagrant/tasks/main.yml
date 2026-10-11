@@ -1,0 +1,94 @@
+---
+- name: Load distro-specific package names
+  ansible.builtin.include_vars: "{{ dotfiles_distro }}.yml"
+
+- name: Install KVM/libvirt packages
+  ansible.builtin.package:
+    name: "{{ vagrant_packages }}"
+    state: present
+  become: true
+
+- name: Enable and start libvirt sockets
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: "{{ vagrant_libvirt_sockets }}"
+  become: true
+  when: ansible_facts.service_mgr == 'systemd'
+
+- name: Add user to libvirt groups
+  ansible.builtin.user:
+    name: "{{ dotfiles_user }}"
+    groups: "{{ vagrant_user_groups }}"
+    append: true
+  become: true
+
+- name: Check default libvirt network
+  ansible.builtin.command: virsh --connect qemu:///system net-info default
+  register: vagrant_default_net
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Start default libvirt network
+  ansible.builtin.command: virsh --connect qemu:///system net-start default
+  become: true
+  when: vagrant_default_net.stdout is search('Active:\s+no')
+  changed_when: true
+
+- name: Autostart default libvirt network
+  ansible.builtin.command: virsh --connect qemu:///system net-autostart default
+  become: true
+  when: vagrant_default_net.stdout is search('Autostart:\s+no')
+  changed_when: true
+
+- name: Get latest Vagrant release
+  ansible.builtin.uri:
+    url: https://api.releases.hashicorp.com/v1/releases/vagrant/latest
+    return_content: true
+  register: vagrant_release
+
+- name: Check installed Vagrant version
+  ansible.builtin.command: vagrant --version
+  register: vagrant_installed
+  changed_when: false
+  failed_when: false
+
+- name: Import HashiCorp GPG key
+  ansible.builtin.rpm_key:
+    key: https://rpm.releases.hashicorp.com/gpg
+    state: present
+  become: true
+  when: vagrant_release.json.version not in vagrant_installed.stdout
+
+# Vagrant is not packaged for Tumbleweed, and the upstream RPM bundles its own
+# ruby, so it has no distro dependencies. Pulled from the yum repo rather than
+# releases.hashicorp.com because only that copy is GPG signed.
+- name: Install Vagrant from upstream RPM
+  community.general.zypper:
+    name: "https://rpm.releases.hashicorp.com/RHEL/9/x86_64/stable/vagrant-{{ vagrant_release.json.version }}-1.x86_64.rpm"
+    state: present
+  become: true
+  when: vagrant_release.json.version not in vagrant_installed.stdout
+
+- name: Check installed Vagrant plugins
+  ansible.builtin.command: vagrant plugin list
+  register: vagrant_plugins
+  changed_when: false
+  failed_when: false
+
+- name: Locate system readline
+  ansible.builtin.shell: ldd /bin/sh | awk '/libreadline/ {print $3}'
+  register: vagrant_readline
+  changed_when: false
+
+# Vagrant puts its embedded lib dir on LD_LIBRARY_PATH, and the libreadline it
+# bundles is not linked against tinfo, so every /bin/sh the gem build spawns dies
+# on an undefined symbol. Preloading the system copy claims the soname first.
+- name: Install vagrant-libvirt plugin
+  ansible.builtin.command: vagrant plugin install vagrant-libvirt
+  environment:
+    LD_PRELOAD: "{{ vagrant_readline.stdout }}"
+  when: "'vagrant-libvirt' not in vagrant_plugins.stdout"
+  changed_when: true

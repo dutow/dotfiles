@@ -3,6 +3,13 @@
 # per-context persist tree, runs the user's init.sh, then execs CMD.
 set -e
 
+# This script rm -rf's dotfiles under $HOME. Outside a container that $HOME is
+# the real one, so make sure we are inside one before touching anything.
+if [ ! -e /run/.containerenv ] && [ ! -e /.dockerenv ]; then
+    echo "dcont-entrypoint: not running inside a container, refusing to continue" >&2
+    exit 1
+fi
+
 case "${DCONT_AUDIT_MODE:-off}" in
     strict) sudo /usr/local/sbin/dcont-egress-init ;;
 esac

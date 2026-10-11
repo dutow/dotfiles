@@ -11,6 +11,7 @@ if [[ -z "$SSH_CONNECTION" ]] || [[ -z "$SSH_AUTH_SOCK" ]]; then
   fi
 fi
 export DOTFILES_AICONT_DIR="${DOTFILES_AICONT_DIR:-$HOME/.aicont}"
+export VAGRANT_DEFAULT_PROVIDER=libvirt
 
 # Load SSH keys into agent on first interactive shell (console/WSL)
 # Desktop (Hyprland) handles this via exec-once with askpass
@@ -67,6 +68,7 @@ path=("$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/platform-tools" $p
 # Container-only aliases (dcont / docker / podman)
 if [[ -f /.dockerenv || -f /run/.containerenv ]]; then
   alias yclaude='claude --dangerously-skip-permissions'
+  alias ycodex='codex --dangerously-bypass-approvals-and-sandbox'
 
   # Keep mutable Android state (gradle cache, adb keys, AVDs) in the per-context
   # persist dir so it stays isolated and survives rebuilds. These paths don't

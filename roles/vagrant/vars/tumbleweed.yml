@@ -1,0 +1,32 @@
+---
+vagrant_packages:
+  - libvirt
+  - libvirt-daemon-qemu
+  - libvirt-daemon-config-network
+  - libvirt-client
+  - qemu
+  - qemu-x86
+  - qemu-tools
+  - virt-manager
+  - virt-install
+  - nfs-kernel-server
+  # native extensions of the vagrant-libvirt plugin are built on install
+  - gcc
+  - make
+  - pkgconf-pkg-config
+  - libvirt-devel
+  - libxml2-devel
+  - libxslt-devel
+
+# Modular libvirt daemons, socket activated. Tumbleweed no longer uses libvirtd.
+vagrant_libvirt_sockets:
+  - virtqemud.socket
+  - virtnetworkd.socket
+  - virtstoraged.socket
+  - virtnodedevd.socket
+  - virtsecretd.socket
+  - virtlogd.socket
+
+vagrant_user_groups:
+  - libvirt
+  - kvm

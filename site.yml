@@ -77,6 +77,10 @@
       tags: wsl
       when: "dotfiles_env == 'wsl'"
 
+    - role: vagrant
+      tags: vagrant
+      when: "dotfiles_env == 'desktop'"
+
     - role: fido2
       tags: fido2
       when: "dotfiles_env == 'desktop'"

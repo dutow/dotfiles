@@ -96,6 +96,7 @@ Roles are applied in order from `site.yml`. The `detect` role always runs first.
 | `desktop`       | desktop        | env is `desktop` or `wsl`        | Ghostty, Mesa, Wayland libs, NVIDIA/AMD drivers (opt.) |
 | `hyprland`      | hyprland       | env is `desktop`                 | Hyprland WM + uwsm, greetd, waybar, wofi, etc.    |
 | `desktop-apps`  | desktop-apps   | env is `desktop`                 | Desktop apps (zypper + Flatpak)                    |
+| `vagrant`       | vagrant        | env is `desktop`                 | Vagrant + libvirt/KVM provider, virt-manager       |
 | `wsl`           | wsl            | env is `wsl`                     | WSL-specific config (placeholder)                  |
 | `links`         | links          | —                                | Dotbot symlinks (always last)                      |
 
@@ -108,6 +109,21 @@ Flatpak (via Flathub): Slack, Discord, Dropbox, Android Studio
 The desktop role also adds the local user to the `kvm` group so the Android
 emulator (and other KVM workloads) can use `/dev/kvm`. Re-login required
 after first install.
+
+### Vagrant + KVM (Tumbleweed)
+
+Vagrant is not in the Tumbleweed repos, so the role installs the latest upstream
+RPM from HashiCorp (it bundles its own ruby, no distro dependencies) and then
+builds the `vagrant-libvirt` plugin against the system libvirt. Re-running the
+role upgrades Vagrant when a new release is out.
+
+KVM side: modular libvirt daemons (`virtqemud` & friends, socket activated),
+`virt-manager`, and the `default` NAT network started + set to autostart. The
+local user is added to the `libvirt` and `kvm` groups - re-login required after
+first install.
+
+`VAGRANT_DEFAULT_PROVIDER=libvirt` is exported from `.zshrc`, so `vagrant up`
+picks libvirt without a `--provider` flag.
 
 ### GPU drivers
 
@@ -193,6 +209,14 @@ dcont list
 dcont clean
 ```
 
+Mounts landing on the container home (`--mount $HOME`, `/`, `/home`) are refused:
+the entrypoint wipes `~/.ssh` and other dotfiles there, so the host copies would
+go with them. Use an explicit target (`--mount $HOME:/work`) if you really need it.
+
+Nested sandboxes (the openai codex sandbox) need a writable `/proc`, which
+docker masks by default. Pass `--systempaths-unconfined` to drop the masked and
+read-only path defaults. Docker only; podman handles these paths differently.
+
 Zsh tab completion is provided for all subcommands and their flags.
 
 #### Project pinning via env vars
@@ -206,6 +230,7 @@ Zsh tab completion is provided for all subcommands and their flags.
 | `DCONT_SHELL`   | `--shell`       |                                                                       |
 | `DCONT_RUNTIME` | `--runtime`     |                                                                       |
 | `DCONT_GPU`     | `--gpu`         | Truthy: `1`, `true`, `yes`, `on`                                      |
+| `DCONT_SYSTEMPATHS_UNCONFINED` | `--systempaths-unconfined` | Truthy: `1`, `true`, `yes`, `on`           |
 | `DCONT_MOUNT`   | `--mount`       | Single string, or newline-separated for multiple. Additive with CLI.  |
 | `DCONT_NETWORK` | `--network`     | Same format and semantics as `DCONT_MOUNT`.                           |
 

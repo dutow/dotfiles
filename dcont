@@ -23,6 +23,28 @@ pick_free_port() {
     python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()'
 }
 
+# The entrypoint owns the container home: it rm -rf's ~/.ssh, ~/.claude and
+# friends before symlinking them into .aicontext. A mount landing on that dir
+# (or above it) points those deletes at the host. Refuse.
+check_mount_dest() {
+    local mount="$1" home="$2" dest
+
+    # host:container[:opts] or bare path used for both sides
+    dest="${mount#*:}"
+    dest="${dest%%:*}"
+    while [[ "$dest" == */ && "$dest" != "/" ]]; do
+        dest="${dest%/}"
+    done
+
+    if [ "$dest" = "/" ] || [ "$dest" = "$home" ] || [[ "$home" == "$dest"/* ]]; then
+        echo "ERROR: refusing mount '$mount': container path '$dest' covers the home dir $home" >&2
+        echo "       The entrypoint wipes ~/.ssh and other dotfiles under it." >&2
+        echo "       Mount the project dir instead, or pick an explicit target:" >&2
+        echo "         dcont run --mount $dest:/work" >&2
+        exit 1
+    fi
+}
+
 start_mitmproxy() {
     local log_dir="$1"
     local port="$2"
@@ -244,6 +266,10 @@ cmd_run() {
         1|true|yes|on) gpu=true ;;
     esac
     local audit_mode="${DCONT_AUDIT:-strict}"
+    local unconfined_paths=false
+    case "${DCONT_SYSTEMPATHS_UNCONFINED:-}" in
+        1|true|yes|on) unconfined_paths=true ;;
+    esac
     local extra_cmd=()
 
     # Pre-populate mounts/networks from env (newline-separated for multiple,
@@ -271,6 +297,7 @@ cmd_run() {
             --shell)   shell="$2"; shift 2 ;;
             --runtime) runtime="$2"; shift 2 ;;
             --gpu)     gpu=true; shift ;;
+            --systempaths-unconfined) unconfined_paths=true; shift ;;
             --audit=*) audit_mode="${1#--audit=}"; shift ;;
             --audit)   audit_mode="$2"; shift 2 ;;
             --) shift; extra_cmd=("$@"); break ;;
@@ -292,6 +319,13 @@ cmd_run() {
         done
     fi
 
+    local host_user
+    host_user=$(id -un)
+
+    for mount in "${mounts[@]}"; do
+        check_mount_dest "$mount" "/home/$host_user"
+    done
+
     local rt
     rt=$(detect_runtime "$runtime")
     local image_name="${IMAGE_PREFIX}-${tag}"
@@ -310,17 +344,16 @@ cmd_run() {
     mkdir -p "$ctx_dir/persist/ssh"
     chmod 700 "$ctx_dir/persist/ssh"
 
-    # Sync system-level CLAUDE.md into the context's claude dir
+    # Sync system-level CLAUDE.md into the context as claude and codex instructions
     local src_claude_md="$HOME/.claude/CLAUDE.md"
-    local dst_claude_md="$ctx_dir/claude/CLAUDE.md"
+    local dst_md
     if [ -f "$src_claude_md" ]; then
-        if [ ! -f "$dst_claude_md" ] || ! cmp -s "$src_claude_md" "$dst_claude_md"; then
-            cp "$src_claude_md" "$dst_claude_md"
-        fi
+        for dst_md in "$ctx_dir/claude/CLAUDE.md" "$ctx_dir/codex/AGENTS.md"; do
+            if [ ! -f "$dst_md" ] || ! cmp -s "$src_claude_md" "$dst_md"; then
+                cp "$src_claude_md" "$dst_md"
+            fi
+        done
     fi
-
-    local host_user
-    host_user=$(id -un)
 
     local run_args=(run --rm)
     if [ -t 0 ] && [ -t 1 ]; then
@@ -334,6 +367,16 @@ cmd_run() {
     fi
 
     run_args+=(--shm-size=2g --tmpfs /run/tmux:mode=1777 --security-opt seccomp=unconfined --security-opt label=disable)
+
+    if [ "$unconfined_paths" = true ]; then
+        # Leaves /proc writable so nested sandboxes (codex) can set up their own
+        # namespaces. Docker option; podman masks paths differently.
+        if [ "$rt" = "docker" ]; then
+            run_args+=(--security-opt systempaths=unconfined)
+        else
+            echo "WARNING: --systempaths-unconfined is a docker option, ignored for $rt" >&2
+        fi
+    fi
 
     run_args+=(-v "$ctx_dir:/home/$host_user/.aicontext")
 
@@ -511,11 +554,14 @@ Build options:
 Run options:
   --tag <tag>              Image tag to run (default: $DEFAULT_DISTRO)
   --mount <path>           Volume mount (repeatable). host:container or just path
+                           Cannot target the container home dir (see README)
   --network <name>         Container network to join (repeatable). Use a compose
                            network name or 'host' for host networking
   --context <name>         AI config context name (default: default)
   --shell <shell>          Override shell (default: /bin/zsh)
   --gpu                    Enable GPU passthrough (AMD/Radeon DRI + KFD)
+  --systempaths-unconfined Drop the masked/read-only /proc paths (docker only),
+                           needed for the openai codex sandbox to work inside
   --audit <mode>           strict|soft|off (default: strict, env: DCONT_AUDIT)
   --runtime <podman|docker> Override runtime detection
 
@@ -525,6 +571,8 @@ Run env vars (project pinning, e.g. via .env autoloaded by zsh):
   DCONT_SHELL     default --shell
   DCONT_RUNTIME   default --runtime
   DCONT_GPU       enable --gpu when set to 1/true/yes/on
+  DCONT_SYSTEMPATHS_UNCONFINED
+                  enable --systempaths-unconfined when set to 1/true/yes/on
   DCONT_AUDIT     audit mode override (default: strict)
   DCONT_MOUNT     mount(s); single string, or newline-separated for multiple.
                   Additive with --mount on the command line.

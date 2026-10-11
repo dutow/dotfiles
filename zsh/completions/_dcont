@@ -27,6 +27,7 @@ _dcont_run() {
     '*--mount[Volume mount (host\:container or path)]:mount:_files -/' \
     '--context[AI config context name]:context:' \
     '--shell[Override shell]:shell:' \
+    '--systempaths-unconfined[Drop masked/read-only /proc paths (docker)]' \
     '--runtime[Container runtime]:runtime:(('$_dcont_runtimes'))'
 }
 
